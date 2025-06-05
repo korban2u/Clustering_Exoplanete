@@ -55,9 +55,9 @@ public class MainBiomes {
 
         // 3. Clustering K-Means avec norme CIE94
         NormeCouleurs normeCie94 = new NormeCie94();
-        KMeans kmeans = new KMeans(new NormeCie94());
+        KMeans kmeans = new KMeans(normeCie94,nbBiomes);
         System.out.println("Lancement du clustering K-Means...");
-        int[] affectations = kmeans.classifier(donneesRGB, nbBiomes);
+        int[] affectations = kmeans.classifier(donneesRGB);
 
         // 4. Créer palette des biomes trouvés
         Palette paletteBiomes = kmeans.creerPaletteBiomes(kmeans.getCentroides());

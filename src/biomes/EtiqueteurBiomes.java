@@ -12,11 +12,11 @@ import java.util.Map;
  */
 public class EtiqueteurBiomes {
 
-    // Correspondance couleur RGB -> nom de biome (basé sur la figure 6 du sujet)
+
     private static final Map<Color, String> COULEURS_BIOMES = new HashMap<>();
 
     static {
-        // Initialisation des couleurs de référence des biomes selon la palette fournie
+
         COULEURS_BIOMES.put(new Color(71, 70, 61), "Tundra");
         COULEURS_BIOMES.put(new Color(43, 50, 35), "Taiga");
         COULEURS_BIOMES.put(new Color(59, 66, 43), "Foret temperee");
@@ -56,7 +56,6 @@ public class EtiqueteurBiomes {
             Color couleurReference = entry.getKey();
             String nomBiome = entry.getValue();
 
-            // Utilisation de la norme spécifiée pour calculer la distance
             double distance = norme.distanceCouleur(couleurCentroide, couleurReference);
 
             if (distance < distanceMinimale) {

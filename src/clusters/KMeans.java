@@ -12,12 +12,14 @@ public class KMeans implements AlgoClustering{
 
     private NormeCouleurs norme;
     private int[][] centroides;
-    public KMeans(NormeCouleurs norme) {
+    int nbClusters;
+    public KMeans(NormeCouleurs norme,int nbClusters) {
         this.norme = norme;
+        this.nbClusters = nbClusters;
     }
 
     @Override
-    public int[] classifier(int[][] donnees, int nbClusters) {
+    public int[] classifier(int[][] donnees) {
         centroides = iniCentroides(donnees,nbClusters);
 
         boolean fin = false;
@@ -41,6 +43,16 @@ public class KMeans implements AlgoClustering{
 
         }
         return affectationGroupes;
+    }
+
+    @Override
+    public int getNombreClusters() {
+        return nbClusters;
+    }
+
+    @Override
+    public String getNomAlgorithme() {
+        return "K-Means";
     }
 
     private int trouverBiomePlusProche(int[] couleurPixel, int[][] centroides) {
