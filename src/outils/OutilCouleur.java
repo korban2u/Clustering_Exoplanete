@@ -105,6 +105,6 @@ public class OutilCouleur {
     }
 
     public static Color getColor(int[] c){
-        return new Color(c[0],c[1],c[0]);
+        return new Color(c[0],c[1],c[2]);
     }
 }

@@ -3,7 +3,9 @@ package biomes;
 import clusters.KMeans;
 import clusters.VisualisationBiomes;
 import normeCouleurs.NormeCie94;
+import normeCouleurs.NormeCielab;
 import normeCouleurs.NormeCouleurs;
+import normeCouleurs.NormeEuclidienne;
 import outils.OutilsImage;
 import outils.Palette;
 
@@ -40,10 +42,8 @@ public class MainBiomes {
         System.out.println("Nombre de biomes à détecter : " + nbBiomes);
         System.out.println();
 
-        // ================================
-        // ÉTAPE 2.1 : DÉTECTION DES BIOMES
-        // ================================
-        System.out.println("🔍 Étape 2.1 : Détection des groupes de pixels similaires...");
+        // DETECTION DES BIOMES
+        System.out.println("2.1 : Détection des groupes de pixels similaires...");
 
         // 1. Charger l'image
         BufferedImage image = OutilsImage.convertionCheminEnBufferedImage(cheminImage);
@@ -55,19 +55,19 @@ public class MainBiomes {
 
         // 3. Clustering K-Means avec norme CIE94
         NormeCouleurs normeCie94 = new NormeCie94();
-        KMeans kmeans = new KMeans(normeCie94);
+        KMeans kmeans = new KMeans(new NormeCie94());
         System.out.println("Lancement du clustering K-Means...");
         int[] affectations = kmeans.classifier(donneesRGB, nbBiomes);
 
         // 4. Créer palette des biomes trouvés
         Palette paletteBiomes = kmeans.creerPaletteBiomes(kmeans.getCentroides());
-        System.out.println("✅ Clustering terminé, " + nbBiomes + " clusters détectés");
+        System.out.println("Clustering terminé, " + nbBiomes + " clusters détectés");
         System.out.println();
 
         // ===============================
         // ÉTAPE 2.2 : ÉTIQUETAGE DES BIOMES
         // ===============================
-        System.out.println("🏷️  Étape 2.2 : Étiquetage des biomes...");
+        System.out.println("2.2 : Étiquetage des biomes...");
 
         // Étiqueter automatiquement les biomes détectés
         String[] etiquettes = EtiqueteurBiomes.etiqueterTousLesBiomes(kmeans.getCentroides());
@@ -83,13 +83,13 @@ public class MainBiomes {
         // ====================================
         // ÉTAPE 2.3 : AFFICHAGE DES BIOMES
         // ====================================
-        System.out.println("🎨 Étape 2.3 : Génération des visualisations...");
+        System.out.println("2.3 : Génération des visualisations...");
 
         // 5. Visualiser le résultat global (tous les biomes sur une image)
         BufferedImage imageResultatGlobal = VisualisationBiomes.visualiserBiomes(
                 image, affectations, paletteBiomes);
         OutilsImage.sauverImage(imageResultatGlobal, "./resultats/tous_biomes_detectes.jpg");
-        System.out.println("✅ Image globale sauvegardée : ./resultats/tous_biomes_detectes.jpg");
+        System.out.println("Image globale sauvegardée : ./resultats/tous_biomes_detectes.jpg");
 
         // 6. Générer les images individuelles de chaque biome
         int pourcentageEclaircissement = 75; // 75% comme dans l'exemple du sujet
