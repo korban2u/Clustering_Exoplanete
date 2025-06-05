@@ -27,6 +27,7 @@ public class EtiqueteurBiomes {
         COULEURS_BIOMES.put(new Color(200, 200, 200), "Glacier");
         COULEURS_BIOMES.put(new Color(49, 83, 100), "EauPeu profonde");
         COULEURS_BIOMES.put(new Color(12, 31, 47), "Eau profonde");
+
     }
 
     /**
