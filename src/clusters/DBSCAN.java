@@ -1,134 +1,80 @@
 package clusters;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
- * Implémentation de l'algorithme DBSCAN pour le clustering basé sur la densité.
- * Particulièrement adapté pour détecter des clusters de formes arbitraires et gérer le bruit.
+ * Implémentation de l'algorithme DBSCAN pour la détection d'écosystèmes.
+ * Adapté pour traiter des positions de pixels (x, y) avec la distance euclidienne.
  */
 public class DBSCAN implements AlgoClustering {
 
-    private double eps;          // Rayon de voisinage
-    private int minPts;          // Nombre minimum de points pour former un cluster
-    private int nombreClusters;  // Nombre de clusters trouvés
+    private double eps;  // Rayon de voisinage
+    private int minPts;  // Nombre minimum de points pour former un cluster
+    private int nombreClusters;
 
     // États des points
-    private static final int NON_TRAITE = -2;
+    private static final int NON_VISITE = 0;
     private static final int BRUIT = -1;
 
     /**
-     * Constructeur pour DBSCAN.
-     * @param eps Rayon de voisinage (distance maximale entre points voisins)
+     * Constructeur
+     * @param eps Rayon de voisinage (distance maximale entre points)
      * @param minPts Nombre minimum de points pour former un cluster
      */
     public DBSCAN(double eps, int minPts) {
         this.eps = eps;
         this.minPts = minPts;
-        this.nombreClusters = 0;
     }
 
     @Override
-    public int[] classifier(int[][] donnees) {
-        int n = donnees.length;
-        int[] affectations = new int[n];
-        boolean[] traite = new boolean[n];
+    public int[] classifier(int[][] objets) {
+        int n = objets.length;
+        int[] clusters = new int[n];
+        Arrays.fill(clusters, NON_VISITE);
 
-        // Initialiser tous les points comme non traités
+        int clusterActuel = 0;
+
         for (int i = 0; i < n; i++) {
-            affectations[i] = NON_TRAITE;
-            traite[i] = false;
-        }
+            if (clusters[i] != NON_VISITE) {
+                continue;
+            }
 
-        int clusterCourant = 0;
+            // Trouver les voisins du point i
+            List<Integer> voisins = regionQuery(objets, i);
 
-        // Parcourir tous les points
-        for (int i = 0; i < n; i++) {
-            if (!traite[i]) {
-                traite[i] = true;
-
-                // Trouver les voisins
-                List<Integer> voisins = regionQuery(donnees, i, eps);
-
-                if (voisins.size() >= minPts) {
-                    // Créer un nouveau cluster
-                    expandCluster(donnees, affectations, traite, i, voisins, clusterCourant);
-                    clusterCourant++;
-                } else {
-                    // Marquer comme bruit
-                    affectations[i] = BRUIT;
-                }
+            if (voisins.size() < minPts) {
+                // Point de bruit
+                clusters[i] = BRUIT;
+            } else {
+                // Créer un nouveau cluster
+                expandCluster(objets, clusters, i, voisins, clusterActuel);
+                clusterActuel++;
             }
         }
 
-        this.nombreClusters = clusterCourant;
+        this.nombreClusters = clusterActuel;
 
-        // Convertir les points de bruit en -1 pour être compatible avec l'interface
-        // et remettre les clusters à partir de 0
+        // Convertir les points de bruit en cluster spécial si nécessaire
+        // ou les laisser comme -1
         for (int i = 0; i < n; i++) {
-            if (affectations[i] == BRUIT) {
-                affectations[i] = -1;
+            if (clusters[i] == BRUIT) {
+                clusters[i] = -1; // ou clusterActuel si on veut un cluster "bruit"
             }
         }
 
-        return affectations;
+        return clusters;
     }
 
     /**
-     * Expande un cluster à partir d'un point core et ses voisins.
+     * Trouve tous les points dans le rayon eps du point donné
      */
-    private void expandCluster(int[][] donnees, int[] affectations, boolean[] traite,
-                               int pointIndex, List<Integer> voisins, int clusterId) {
-        // Ajouter le point au cluster
-        affectations[pointIndex] = clusterId;
-
-        // Parcourir tous les voisins
-        int i = 0;
-        while (i < voisins.size()) {
-            int voisinIndex = voisins.get(i);
-
-            if (!traite[voisinIndex]) {
-                traite[voisinIndex] = true;
-
-                // Trouver les voisins du voisin
-                List<Integer> voisinsVoisin = regionQuery(donnees, voisinIndex, eps);
-
-                if (voisinsVoisin.size() >= minPts) {
-                    // Ajouter les nouveaux voisins à la liste
-                    for (int nouveauVoisin : voisinsVoisin) {
-                        if (!voisins.contains(nouveauVoisin)) {
-                            voisins.add(nouveauVoisin);
-                        }
-                    }
-                }
-            }
-
-            // Si le point n'appartient à aucun cluster, l'ajouter au cluster courant
-            if (affectations[voisinIndex] < 0) {
-                affectations[voisinIndex] = clusterId;
-            }
-
-            i++;
-        }
-    }
-
-    /**
-     * Trouve tous les points dans le rayon eps d'un point donné.
-     * Pour la détection des écosystèmes, on utilise la distance euclidienne
-     * sur les coordonnées (x,y) des pixels.
-     * OPTIMISATION : On arrête la recherche dès qu'on dépasse eps
-     */
-    private List<Integer> regionQuery(int[][] donnees, int pointIndex, double eps) {
+    private List<Integer> regionQuery(int[][] objets, int pointIndex) {
         List<Integer> voisins = new ArrayList<>();
-        double epsCarree = eps * eps; // Éviter de calculer la racine carrée
+        int[] point = objets[pointIndex];
 
-        for (int i = 0; i < donnees.length; i++) {
-            if (i != pointIndex) {
-                // Calcul optimisé de la distance au carré
-                double distanceCarree = calculerDistanceCarree(donnees[pointIndex], donnees[i]);
-                if (distanceCarree <= epsCarree) {
-                    voisins.add(i);
-                }
+        for (int i = 0; i < objets.length; i++) {
+            if (distanceEuclidienne(point, objets[i]) <= eps) {
+                voisins.add(i);
             }
         }
 
@@ -136,24 +82,48 @@ public class DBSCAN implements AlgoClustering {
     }
 
     /**
-     * Calcule la distance au carré entre deux points (plus rapide, pas de sqrt).
+     * Étend le cluster en ajoutant tous les points atteignables
      */
-    private double calculerDistanceCarree(int[] point1, int[] point2) {
-        double somme = 0;
-        for (int i = 0; i < point1.length; i++) {
-            double diff = point1[i] - point2[i];
-            somme += diff * diff;
+    private void expandCluster(int[][] objets, int[] clusters, int pointIndex,
+                               List<Integer> voisins, int clusterId) {
+        clusters[pointIndex] = clusterId;
+
+        Queue<Integer> aTraiter = new LinkedList<>(voisins);
+        Set<Integer> voisinsSet = new HashSet<>(voisins);
+
+        while (!aTraiter.isEmpty()) {
+            int voisinIndex = aTraiter.poll();
+
+            // Si le point n'a pas été visité
+            if (clusters[voisinIndex] == NON_VISITE) {
+                clusters[voisinIndex] = clusterId;
+
+                // Trouver les voisins du voisin
+                List<Integer> voisinsDuVoisin = regionQuery(objets, voisinIndex);
+
+                // Si c'est un core point, ajouter ses voisins à traiter
+                if (voisinsDuVoisin.size() >= minPts) {
+                    for (int nouveauVoisin : voisinsDuVoisin) {
+                        if (!voisinsSet.contains(nouveauVoisin)) {
+                            aTraiter.add(nouveauVoisin);
+                            voisinsSet.add(nouveauVoisin);
+                        }
+                    }
+                }
+            } else if (clusters[voisinIndex] == BRUIT) {
+                // Si c'était un point de bruit, l'ajouter au cluster
+                clusters[voisinIndex] = clusterId;
+            }
         }
-        return somme;
     }
 
     /**
-     * Calcule la distance entre deux points.
-     * Pour les positions de pixels : distance euclidienne simple.
-     * Pour les couleurs RGB : on pourrait utiliser une norme de couleur.
+     * Calcule la distance euclidienne entre deux points
      */
-    private double calculerDistance(int[] point1, int[] point2) {
-        return Math.sqrt(calculerDistanceCarree(point1, point2));
+    private double distanceEuclidienne(int[] p1, int[] p2) {
+        double dx = p1[0] - p2[0];
+        double dy = p1[1] - p2[1];
+        return Math.sqrt(dx * dx + dy * dy);
     }
 
     @Override
@@ -166,16 +136,20 @@ public class DBSCAN implements AlgoClustering {
         return "DBSCAN";
     }
 
-    /**
-     * Retourne le nombre de points considérés comme du bruit.
-     */
-    public int getNombrePointsBruit(int[] affectations) {
-        int compteur = 0;
-        for (int affectation : affectations) {
-            if (affectation == -1) {
-                compteur++;
-            }
-        }
-        return compteur;
+    // Getters et setters pour les paramètres
+    public double getEps() {
+        return eps;
+    }
+
+    public void setEps(double eps) {
+        this.eps = eps;
+    }
+
+    public int getMinPts() {
+        return minPts;
+    }
+
+    public void setMinPts(int minPts) {
+        this.minPts = minPts;
     }
 }
