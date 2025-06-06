@@ -127,16 +127,6 @@ src/
 └── MainConsole.java        # Interface console
 ```
 
-## 🎯 Exemples de résultats
-
-### Biomes détectés
-- **Tundra** (RGB: 71, 70, 61)
-- **Forêt tropicale** (RGB: 46, 64, 34)
-- **Savane** (RGB: 84, 106, 70)
-- **Désert** (RGB: 152, 140, 120)
-- **Eau profonde** (RGB: 12, 31, 47)
-- ...
-
 ### Structure de sortie
 ```
 resultats/
