@@ -1,5 +1,3 @@
-package gui;
-
 import clustering.ClusteringManager;
 import clustering.ClusteringManager.*;
 import clustering.algorithmes.AlgorithmeClustering;
