@@ -1,11 +1,8 @@
 package biomes;
 
 import clusters.KMeans;
-import clusters.VisualisationBiomes;
 import normeCouleurs.NormeCie94;
-import normeCouleurs.NormeCielab;
 import normeCouleurs.NormeCouleurs;
-import normeCouleurs.NormeEuclidienne;
 import outils.OutilsImage;
 import outils.Palette;
 

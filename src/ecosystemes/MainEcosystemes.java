@@ -1,9 +1,10 @@
-package clusters;
+package ecosystemes;
 
 import biomes.EtiqueteurBiomes;
+import clusters.KMeans;
+import biomes.VisualisationBiomes;
 import normeCouleurs.NormeCie94;
 import normeCouleurs.NormeCouleurs;
-import normeCouleurs.NormeEuclidienne;
 import outils.OutilsImage;
 import outils.Palette;
 

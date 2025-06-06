@@ -1,5 +1,6 @@
 package clusters;
 
+import biomes.VisualisationBiomes;
 import outils.Palette;
 import normeCouleurs.NormeCie94;
 import normeCouleurs.NormeCouleurs;

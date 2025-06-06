@@ -1,4 +1,4 @@
-package clusters;
+package biomes;
 
 import outils.Palette;
 

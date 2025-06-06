@@ -1,5 +1,6 @@
-package clusters;
+package ecosystemes;
 
+import clusters.DBSCAN;
 import outils.OutilsImage;
 import java.awt.*;
 import java.awt.image.BufferedImage;
