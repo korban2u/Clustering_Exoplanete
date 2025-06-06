@@ -15,7 +15,6 @@ import java.io.IOException;
 
 /**
  * Classe pour visualiser et sauvegarder les biomes détectés.
- * Version améliorée avec indices de validation dans les rapports.
  */
 public class VisualisationBiomes {
 
@@ -198,16 +197,19 @@ public class VisualisationBiomes {
                 rapport.append("  → Valeurs typiques: 0.5-2.0 (< 1.0 = bon clustering)\n\n");
             }
 
-            // Silhouette (pour tous les algorithmes)
-            double silhouette = silhouetteScore.calculer(resultat, metrique);
-            rapport.append(String.format("Score de Silhouette: %.4f\n", silhouette));
-            rapport.append("  → Valeur entre -1 et 1, plus proche de 1 = meilleur\n");
-            rapport.append("  → Interprétation: ");
-            if (silhouette > 0.7) rapport.append("Structure forte");
-            else if (silhouette > 0.5) rapport.append("Structure raisonnable");
-            else if (silhouette > 0.25) rapport.append("Structure faible");
-            else rapport.append("Pas de structure claire");
-            rapport.append("\n\n");
+            // Silhouette (pour DBSCAN)
+            if(resultat.algorithme.contains("DBSCAN")){
+                double silhouette = silhouetteScore.calculer(resultat, metrique);
+                rapport.append(String.format("Score de Silhouette: %.4f\n", silhouette));
+                rapport.append("  → Valeur entre -1 et 1, plus proche de 1 = meilleur\n");
+                rapport.append("  → Interprétation: ");
+                if (silhouette > 0.7) rapport.append("Structure forte");
+                else if (silhouette > 0.5) rapport.append("Structure raisonnable");
+                else if (silhouette > 0.25) rapport.append("Structure faible");
+                else rapport.append("Pas de structure claire");
+                rapport.append("\n\n");
+            }
+
 
         } catch (Exception e) {
             rapport.append("Erreur lors du calcul des indices: ").append(e.getMessage()).append("\n\n");

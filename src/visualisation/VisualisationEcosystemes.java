@@ -13,7 +13,6 @@ import java.util.Random;
 
 /**
  * Classe pour visualiser et sauvegarder les écosystèmes détectés dans chaque biome.
- * Version améliorée avec indices de validation dans les rapports.
  */
 public class VisualisationEcosystemes {
 
