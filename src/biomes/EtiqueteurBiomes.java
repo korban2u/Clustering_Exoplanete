@@ -16,18 +16,16 @@ public class EtiqueteurBiomes {
     private static final Map<Color, String> COULEURS_BIOMES = new HashMap<>();
 
     static {
-
-        COULEURS_BIOMES.put(new Color(71, 70, 61), "Tundra");
-        COULEURS_BIOMES.put(new Color(43, 50, 35), "Taiga");
-        COULEURS_BIOMES.put(new Color(59, 66, 43), "Foret temperee");
-        COULEURS_BIOMES.put(new Color(46, 64, 34), "Foret tropicale");
-        COULEURS_BIOMES.put(new Color(84, 106, 70), "Savane");
-        COULEURS_BIOMES.put(new Color(104, 95, 82), "Prairie");
-        COULEURS_BIOMES.put(new Color(152, 140, 120), "Desert");
-        COULEURS_BIOMES.put(new Color(200, 200, 200), "Glacier");
-        COULEURS_BIOMES.put(new Color(49, 83, 100), "EauPeu profonde");
-        COULEURS_BIOMES.put(new Color(12, 31, 47), "Eau profonde");
-
+        COULEURS_BIOMES.put(new Color(220, 220, 200), "Tundra");           // #DCDCC8
+        COULEURS_BIOMES.put(new Color(45, 70, 45), "Taiga");               // #2D462D
+        COULEURS_BIOMES.put(new Color(80, 120, 50), "Foret temperee");     // #507832
+        COULEURS_BIOMES.put(new Color(30, 80, 30), "Foret tropicale");     // #1E501E
+        COULEURS_BIOMES.put(new Color(180, 160, 80), "Savane");            // #B4A050
+        COULEURS_BIOMES.put(new Color(120, 160, 80), "Prairie");           // #78A050
+        COULEURS_BIOMES.put(new Color(210, 180, 140), "Desert");           // #D2B48C
+        COULEURS_BIOMES.put(new Color(240, 245, 250), "Glacier");          // #F0F5FA
+        COULEURS_BIOMES.put(new Color(100, 180, 200), "Eau peu profonde"); // #64B4C8
+        COULEURS_BIOMES.put(new Color(20, 50, 80), "Eau profonde");        // #143250
     }
 
     /**

@@ -1,5 +1,6 @@
 package clusters;
 
+import biomes.EtiqueteurBiomes;
 import normeCouleurs.NormeCie94;
 import normeCouleurs.NormeCouleurs;
 import normeCouleurs.NormeEuclidienne;
@@ -9,6 +10,7 @@ import outils.Palette;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -16,26 +18,22 @@ import java.util.Map;
  */
 public class MainEcosystemes {
 
-    // Définition des biomes selon la Figure 6 du sujet
-    private static final String[] NOMS_BIOMES = {
-            "Eau profonde",
-            "Eau peu profonde",
-            "Déserts",
-            "Savanes",
-            "Forêts",
-            "Montagnes",
-            "Glaciers"
-    };
+    // Définition des biomes - même structure que dans EtiqueteurBiomes
+    private static final Map<Color, String> COULEURS_BIOMES = new HashMap<>();
 
-    private static final Color[] COULEURS_BIOMES = {
-            new Color(0, 0, 128),      // Eau profonde - Bleu foncé
-            new Color(0, 150, 200),    // Eau peu profonde - Bleu clair
-            new Color(238, 207, 161),  // Déserts - Beige
-            new Color(177, 209, 110),  // Savanes - Vert clair
-            new Color(0, 100, 0),      // Forêts - Vert foncé
-            new Color(128, 128, 128),  // Montagnes - Gris
-            new Color(255, 255, 255)   // Glaciers - Blanc
-    };
+    static {
+        // Nouvelle palette de couleurs - identique à EtiqueteurBiomes
+        COULEURS_BIOMES.put(new Color(220, 220, 200), "Tundra");           // #DCDCC8
+        COULEURS_BIOMES.put(new Color(45, 70, 45), "Taiga");               // #2D462D
+        COULEURS_BIOMES.put(new Color(80, 120, 50), "Foret temperee");     // #507832
+        COULEURS_BIOMES.put(new Color(30, 80, 30), "Foret tropicale");     // #1E501E
+        COULEURS_BIOMES.put(new Color(180, 160, 80), "Savane");            // #B4A050
+        COULEURS_BIOMES.put(new Color(120, 160, 80), "Prairie");           // #78A050
+        COULEURS_BIOMES.put(new Color(210, 180, 140), "Desert");           // #D2B48C
+        COULEURS_BIOMES.put(new Color(240, 245, 250), "Glacier");          // #F0F5FA
+        COULEURS_BIOMES.put(new Color(100, 180, 200), "Eau peu profonde"); // #64B4C8
+        COULEURS_BIOMES.put(new Color(20, 50, 80), "Eau profonde");        // #143250
+    }
 
     public static void main(String[] args) {
         try {
@@ -61,8 +59,9 @@ public class MainEcosystemes {
 
             // 3. Clustering K-Means pour les biomes
             System.out.println("\nÉtape 1 : Détection des biomes avec K-Means...");
+            // Paramètres pour K-Means - adapter selon le nombre de biomes
             NormeCouleurs normeCie94 = new NormeCie94();
-            KMeans kmeans = new KMeans(new NormeEuclidienne(), NOMS_BIOMES.length);
+            KMeans kmeans = new KMeans(normeCie94, COULEURS_BIOMES.size());
             int[] affectationsBiomes = kmeans.classifier(donneesRGB);
 
             // 4. Créer et afficher la palette des biomes trouvés
@@ -78,10 +77,10 @@ public class MainEcosystemes {
             // 6. Détecter les écosystèmes pour chaque biome
             System.out.println("\nÉtape 2 : Détection des écosystèmes avec DBSCAN...");
             Map<Integer, int[]> ecosystemesParBiome = DetectionEcosystemes.detecterEcosystemes(
-                    image, affectationsBiomes, NOMS_BIOMES.length, eps, minPts);
+                    image, affectationsBiomes, COULEURS_BIOMES.size(), eps, minPts);
 
-            // 7. Étiqueter les biomes
-            String[] etiquettesBiomes = etiquerterBiomes(kmeans.getCentroides());
+            // 7. Étiqueter les biomes en utilisant EtiqueteurBiomes
+            String[] etiquettesBiomes = EtiqueteurBiomes.etiqueterTousLesBiomes(kmeans.getCentroides(), normeCie94);
 
             // 8. Sauvegarder toutes les visualisations
             System.out.println("\nÉtape 3 : Génération des visualisations...");
@@ -112,52 +111,6 @@ public class MainEcosystemes {
             System.out.printf("Biome %d : RGB(%d, %d, %d)\n",
                     i, centroides[i][0], centroides[i][1], centroides[i][2]);
         }
-    }
-
-    /**
-     * Étiquette les biomes en trouvant la correspondance la plus proche
-     */
-    private static String[] etiquerterBiomes(int[][] centroides) {
-        String[] etiquettes = new String[centroides.length];
-        boolean[] biomesUtilises = new boolean[NOMS_BIOMES.length];
-
-        for (int i = 0; i < centroides.length; i++) {
-            Color couleurCentroide = new Color(
-                    centroides[i][0], centroides[i][1], centroides[i][2]);
-
-            double distanceMin = Double.MAX_VALUE;
-            int biomeProche = -1;
-
-            // Trouver le biome prédéfini le plus proche
-            for (int j = 0; j < COULEURS_BIOMES.length; j++) {
-                if (!biomesUtilises[j]) {
-                    double distance = distanceRGB(couleurCentroide, COULEURS_BIOMES[j]);
-                    if (distance < distanceMin) {
-                        distanceMin = distance;
-                        biomeProche = j;
-                    }
-                }
-            }
-
-            if (biomeProche >= 0) {
-                etiquettes[i] = NOMS_BIOMES[biomeProche];
-                biomesUtilises[biomeProche] = true;
-            } else {
-                etiquettes[i] = "Biome " + i;
-            }
-        }
-
-        return etiquettes;
-    }
-
-    /**
-     * Calcule la distance euclidienne entre deux couleurs
-     */
-    private static double distanceRGB(Color c1, Color c2) {
-        int dr = c1.getRed() - c2.getRed();
-        int dg = c1.getGreen() - c2.getGreen();
-        int db = c1.getBlue() - c2.getBlue();
-        return Math.sqrt(dr * dr + dg * dg + db * db);
     }
 
     /**
