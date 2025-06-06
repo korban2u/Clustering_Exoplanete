@@ -43,4 +43,9 @@ public class NormeRedmean implements NormeCouleurs {
         // Distance redmean
         return Math.sqrt(weightR * deltaR * deltaR + 4 * deltaG * deltaG + weightB * deltaB * deltaB);
     }
+
+    @Override
+    public String getNom() {
+        return "Redmean";
+    }
 }

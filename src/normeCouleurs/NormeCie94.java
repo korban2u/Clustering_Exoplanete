@@ -60,4 +60,9 @@ public class NormeCie94 implements NormeCouleurs {
 
         return Math.sqrt(terme1 * terme1 + terme2 * terme2 + terme3 * terme3);
     }
+
+    @Override
+    public String getNom() {
+        return "CIE94";
+    }
 }

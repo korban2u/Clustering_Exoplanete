@@ -24,4 +24,9 @@ public class NormeEuclidienne implements NormeCouleurs {
         int dB = c1.getBlue() - c2.getBlue();
         return dR * dR + dG * dG + dB * dB;
     }
+
+    @Override
+    public String getNom() {
+        return "Euclidienne";
+    }
 }

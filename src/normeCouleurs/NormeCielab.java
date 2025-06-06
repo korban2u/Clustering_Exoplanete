@@ -34,4 +34,9 @@ public class NormeCielab implements NormeCouleurs {
         // Distance euclidienne dans l'espace LAB
         return Math.sqrt(deltaL * deltaL + deltaA * deltaA + deltaB * deltaB);
     }
+
+    @Override
+    public String getNom() {
+        return "CIELAB";
+    }
 }

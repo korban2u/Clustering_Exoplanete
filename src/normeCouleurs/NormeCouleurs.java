@@ -11,4 +11,12 @@ public interface NormeCouleurs {
      * @return une valeur représentant la distance entre les deux couleurs
      */
     double distanceCouleur(Color c1, Color c2);
+
+
+    /**
+     * Retourne le nom de la norme.
+     *
+     * @return Nom de la norme
+     */
+    String getNom();
 }
