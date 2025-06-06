@@ -6,38 +6,29 @@ import clustering.centroides.CalculateurCentroidePixel.TypeCentroide;
 import outils.PixelData;
 import metriques.MetriqueDistance;
 
-import java.awt.*;
 import java.util.Random;
 import java.util.Arrays;
 
 /**
- * Implémentation générique de l'algorithme K-Means.
+ * Implémentation de K-Means.
  * Fonctionne avec n'importe quel type de données et métrique.
  *
  * @param <T> Le type de données à clustériser
  */
-public class KMeansGenerique<T> extends AlgorithmeClusteringAbstrait<T> {
+public class KMeans<T> extends AlgorithmeClusteringAbstrait<T> {
 
-    private final int k; // Nombre de clusters souhaité
+    private final int nbClusters; // Nombre de clusters souhaité
     private final int maxIterations;
     private final Random random;
     private CalculateurCentroide<T> calculateurCentroide;
 
-    // Pour le multithreading
-    private final Object[] verrous; // Un verrou par centroïde pour éviter les conflits
 
-    public KMeansGenerique(int k, int maxIterations) {
-        super("K-Means (K=" + k + ")");
-        this.k = k;
+    public KMeans(int nbClusters, int maxIterations) {
+        super("K-Means (K=" + nbClusters + ")");
+        this.nbClusters = nbClusters;
         this.maxIterations = maxIterations;
         this.random = new Random();
-        this.nombreClusters = k;
 
-        // Initialiser les verrous pour le multithreading
-        this.verrous = new Object[k];
-        for (int i = 0; i < k; i++) {
-            verrous[i] = new Object();
-        }
     }
 
     /**
@@ -92,13 +83,13 @@ public class KMeansGenerique<T> extends AlgorithmeClusteringAbstrait<T> {
     /**
      * Initialise les centroïdes en choisissant k points aléatoires.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // on met ça pour eviter avertisements unchecked casts quand on compile (vu que on utilise des types générique)
     private T[] initialiserCentroides(T[] donnees) {
         Class<?> componentType = donnees.getClass().getComponentType();
-        T[] centroides = (T[]) java.lang.reflect.Array.newInstance(componentType, k);
+        T[] centroides = (T[]) java.lang.reflect.Array.newInstance(componentType, nbClusters);
         boolean[] choisis = new boolean[donnees.length];
 
-        for (int i = 0; i < k; i++) {
+        for (int i = 0; i < nbClusters; i++) {
             int index;
             do {
                 index = random.nextInt(donnees.length);
@@ -112,7 +103,7 @@ public class KMeansGenerique<T> extends AlgorithmeClusteringAbstrait<T> {
     }
 
     /**
-     * Affecte chaque point au centroïde le plus proche (version séquentielle).
+     * Affecte chaque point au centroïde le plus proche
      */
     private void affecterPointsSequentiel(T[] donnees, T[] centroides,
                                           int[] affectations, MetriqueDistance<T> metrique) {
@@ -147,10 +138,10 @@ public class KMeansGenerique<T> extends AlgorithmeClusteringAbstrait<T> {
     private T[] mettreAJourCentroides(T[] donnees, int[] affectations) {
         // Utiliser la classe du premier élément pour créer le tableau
         Class<?> componentType = donnees.getClass().getComponentType();
-        T[] nouveauxCentroides = (T[]) java.lang.reflect.Array.newInstance(componentType, k);
+        T[] nouveauxCentroides = (T[]) java.lang.reflect.Array.newInstance(componentType, nbClusters);
 
         // Pour chaque cluster
-        for (int cluster = 0; cluster < k; cluster++) {
+        for (int cluster = 0; cluster < nbClusters; cluster++) {
             // Collecter tous les points du cluster
             int count = 0;
             for (int affectation : affectations) {
@@ -164,7 +155,8 @@ public class KMeansGenerique<T> extends AlgorithmeClusteringAbstrait<T> {
             }
 
             // Créer un tableau avec les points du cluster
-            // Utiliser Array.newInstance pour créer le tableau du bon type
+            // utilisation de Array.newInstance pour créer le tableau du bon type,
+            // sans ça on peut pas vu que on utilise des types génériques
             T[] pointsCluster = (T[]) java.lang.reflect.Array.newInstance(componentType, count);
             int index = 0;
             for (int i = 0; i < affectations.length; i++) {
@@ -174,71 +166,10 @@ public class KMeansGenerique<T> extends AlgorithmeClusteringAbstrait<T> {
             }
 
             // Calculer le centroïde
-            if (calculateurCentroide != null && calculateurCentroide.peutCreerNouveauxObjets()) {
-                // Utiliser le calculateur pour créer un vrai centroïde
-                nouveauxCentroides[cluster] = calculateurCentroide.calculerCentroide(pointsCluster);
-            } else {
-                // Fallback : prendre le point le plus central du cluster
-                nouveauxCentroides[cluster] = trouverPointLePlusCentral(pointsCluster);
-            }
+            nouveauxCentroides[cluster] = calculateurCentroide.calculerCentroide(pointsCluster);
+
         }
 
         return nouveauxCentroides;
-    }
-
-    /**
-     * Trouve le point le plus central d'un ensemble (médoïde).
-     * Utilisé quand on ne peut pas calculer un vrai centroïde.
-     */
-    private T trouverPointLePlusCentral(T[] points) {
-        if (points.length == 1) return points[0];
-
-        T pointCentral = points[0];
-        double distanceMinTotale = Double.MAX_VALUE;
-
-        // Pour chaque point candidat
-        for (T candidat : points) {
-            double distanceTotale = 0;
-
-            // Calculer la somme des distances aux autres points
-            for (T autre : points) {
-                distanceTotale += Math.pow(distanceEuclidienne(candidat, autre), 2);
-            }
-
-            // Si ce point est plus central, le garder
-            if (distanceTotale < distanceMinTotale) {
-                distanceMinTotale = distanceTotale;
-                pointCentral = candidat;
-            }
-        }
-
-        return pointCentral;
-    }
-
-    /**
-     * Calcule une distance euclidienne générique entre deux objets.
-     * Utilisée pour trouver le médoïde quand on n'a pas de calculateur.
-     */
-    private double distanceEuclidienne(T obj1, T obj2) {
-        // Si ce sont des PixelData, on peut calculer directement
-        if (obj1 instanceof PixelData && obj2 instanceof PixelData) {
-            PixelData p1 = (PixelData) obj1;
-            PixelData p2 = (PixelData) obj2;
-
-            double dx = p1.getX() - p2.getX();
-            double dy = p1.getY() - p2.getY();
-
-            Color c1 = p1.getCouleur();
-            Color c2 = p2.getCouleur();
-            double dr = c1.getRed() - c2.getRed();
-            double dg = c1.getGreen() - c2.getGreen();
-            double db = c1.getBlue() - c2.getBlue();
-
-            // Normaliser les distances couleur et position
-            return Math.sqrt((dx*dx + dy*dy) / 1000.0 + (dr*dr + dg*dg + db*db) / 100.0);
-        }
-
-        // Sinon, on ne peut pas calculer
-        return 0;
     }
 }

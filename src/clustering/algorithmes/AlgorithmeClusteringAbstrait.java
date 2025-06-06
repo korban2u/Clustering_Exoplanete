@@ -1,7 +1,7 @@
 package clustering.algorithmes;
 
 /**
- * Classe abstraite qui fournit les fonctionnalités communes à tous les algorithmes.
+ * Classe abstraite qui donne les fonctionnalités en communs des algos.
  *
  * @param <T> Le type de données à clustériser
  */

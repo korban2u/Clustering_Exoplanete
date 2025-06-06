@@ -1,15 +1,16 @@
 package clustering.algorithmes;
 
 import metriques.MetriqueDistance;
+
 import java.util.*;
 
 /**
- * Implémentation générique de l'algorithme DBSCAN.
+ * Implémentation de l'algorithme DBSCAN.
  * Fonctionne avec n'importe quel type de données et métrique.
  *
  * @param <T> Le type de données à clustériser
  */
-public class DBSCANGenerique<T> extends AlgorithmeClusteringAbstrait<T> {
+public class DBSCAN<T> extends AlgorithmeClusteringAbstrait<T> {
 
     private final double eps;
     private final int minPts;
@@ -18,7 +19,7 @@ public class DBSCANGenerique<T> extends AlgorithmeClusteringAbstrait<T> {
     private static final int NON_VISITE = -2;
     private static final int BRUIT = -1;
 
-    public DBSCANGenerique(double eps, int minPts) {
+    public DBSCAN(double eps, int minPts) {
         super("DBSCAN (eps=" + eps + ", minPts=" + minPts + ")");
         this.eps = eps;
         this.minPts = minPts;
@@ -63,7 +64,6 @@ public class DBSCANGenerique<T> extends AlgorithmeClusteringAbstrait<T> {
     }
 
 
-
     /**
      * Trouve tous les points dans le rayon eps du point donné.
      */
@@ -83,9 +83,7 @@ public class DBSCANGenerique<T> extends AlgorithmeClusteringAbstrait<T> {
     /**
      * Étend le cluster en ajoutant tous les points atteignables.
      */
-    private void expandCluster(T[] donnees, int[] clusters, int pointIndex,
-                               List<Integer> voisins, int clusterId,
-                               MetriqueDistance<T> metrique) {
+    private void expandCluster(T[] donnees, int[] clusters, int pointIndex, List<Integer> voisins, int clusterId, MetriqueDistance<T> metrique) {
         clusters[pointIndex] = clusterId;
 
         Queue<Integer> aTraiter = new LinkedList<>(voisins);

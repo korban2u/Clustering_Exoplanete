@@ -2,15 +2,16 @@ package clustering.algorithmes;
 
 import metriques.MetriqueDistance;
 import outils.PixelData;
+
 import java.util.*;
 
 /**
- * Version optimisée de DBSCAN avec grille spatiale.
- * FONCTIONNE UNIQUEMENT AVEC des coordonnées.
+ * Version optimisée de DBSCAN avec l'utilisation de grille spatiale.
+ * FONCTIONNE UNIQUEMENT AVEC des coordonnées. C'est tellement + rapide que l'autre
  *
- * @param <T> Le type de données à clustériser (doit être PixelData)
+ * @param <T> Le type de données à clustériser (doit être PixelData).
  */
-public class DBSCANOptimiseGenerique<T> extends AlgorithmeClusteringAbstrait<T> {
+public class DBSCANOptimise<T> extends AlgorithmeClusteringAbstrait<T> {
 
     private final double eps;
     private final int minPts;
@@ -26,7 +27,7 @@ public class DBSCANOptimiseGenerique<T> extends AlgorithmeClusteringAbstrait<T> 
     private static final int NON_VISITE = -2;
     private static final int BRUIT = -1;
 
-    public DBSCANOptimiseGenerique(double eps, int minPts) {
+    public DBSCANOptimise(double eps, int minPts) {
         super("DBSCAN Optimisé (eps=" + eps + ", minPts=" + minPts + ")");
         this.eps = eps;
         this.minPts = minPts;
@@ -38,8 +39,7 @@ public class DBSCANOptimiseGenerique<T> extends AlgorithmeClusteringAbstrait<T> 
         // Vérifier que ce sont bien des PixelData
         if (donnees.length > 0 && !(donnees[0] instanceof PixelData)) {
             throw new IllegalArgumentException(
-                    "Ce DBSCAN fonctionne qu'avec des PixelData (il faut des coordonnées). " +
-                            "Utilisez DBSCANGenerique pour d'autres types de données."
+                    "Ce DBSCAN fonctionne qu'avec des PixelData (il faut des coordonnées). Utilisez DBSCANGenerique pour d'autres types de données."
             );
         }
 
@@ -87,6 +87,7 @@ public class DBSCANOptimiseGenerique<T> extends AlgorithmeClusteringAbstrait<T> 
      * Construit la grille spatiale pour accélérer les recherches.
      */
     @SuppressWarnings("unchecked")
+    // Evite les message bizarre lors de la compilation (car utilisation de type générique)
     private void construireGrilleSpatiale(T[] donnees) {
         grilleSpatiale = new HashMap<>();
 
@@ -176,9 +177,7 @@ public class DBSCANOptimiseGenerique<T> extends AlgorithmeClusteringAbstrait<T> 
     /**
      * Étend le cluster en ajoutant tous les points atteignables.
      */
-    private void expandCluster(T[] donnees, int[] clusters, int pointIndex,
-                               List<Integer> voisins, int clusterId,
-                               MetriqueDistance<T> metrique) {
+    private void expandCluster(T[] donnees, int[] clusters, int pointIndex, List<Integer> voisins, int clusterId, MetriqueDistance<T> metrique) {
         clusters[pointIndex] = clusterId;
 
         // Utiliser une liste au lieu d'une queue pour de meilleures performances
@@ -210,7 +209,12 @@ public class DBSCANOptimiseGenerique<T> extends AlgorithmeClusteringAbstrait<T> 
     }
 
     // Getters pour les paramètres
-    public double getEps() { return eps; }
-    public int getMinPts() { return minPts; }
+    public double getEps() {
+        return eps;
+    }
+
+    public int getMinPts() {
+        return minPts;
+    }
 
 }
