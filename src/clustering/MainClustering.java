@@ -7,7 +7,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 /**
- * Exemple d'utilisation de la nouvelle architecture de clustering flexible.
+ * Classe de test pour le Clustering (y'a le mainConsole et mainInterface maintenant, c'est 1000x mieux)
  */
 public class MainClustering {
 

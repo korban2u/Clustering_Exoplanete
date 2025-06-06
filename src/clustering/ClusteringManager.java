@@ -21,9 +21,7 @@ public class ClusteringManager {
     /**
      * Effectue un clustering sur une image selon le type de données voulu.
      */
-    public ResultatClustering clusteriserImage(BufferedImage image,
-                                               AlgorithmeClustering<PixelData> algorithme,
-                                               TypeClustering type) {
+    public ResultatClustering clusteriserImage(BufferedImage image, AlgorithmeClustering<PixelData> algorithme, TypeClustering type) {
         // Extraire les données de l'image
         PixelData[] pixels = extrairePixels(image);
 
@@ -37,22 +35,14 @@ public class ClusteringManager {
         long duree = System.currentTimeMillis() - debut;
 
         // Construire et retourner le résultat
-        return new ResultatClustering(
-                affectations,
-                algorithme.getNombreClusters(),
-                algorithme.getNom(),
-                metrique.getNom(),
-                duree,
-                pixels
+        return new ResultatClustering(affectations, algorithme.getNombreClusters(), algorithme.getNom(), metrique.getNom(), duree, pixels
         );
     }
 
     /**
      * Effectue un clustering sur un sous-ensemble de pixels (utile pour les écosystèmes).
      */
-    public ResultatClustering clusteriserSousEnsemble(PixelData[] pixels,
-                                                      AlgorithmeClustering<PixelData> algorithme,
-                                                      TypeClustering type) {
+    public ResultatClustering clusteriserSousEnsemble(PixelData[] pixels, AlgorithmeClustering<PixelData> algorithme, TypeClustering type) {
         MetriqueDistance<PixelData> metrique = obtenirMetrique(type);
 
         long debut = System.currentTimeMillis();
@@ -120,15 +110,15 @@ public class ClusteringManager {
      */
     public static class Algorithmes {
         public static AlgorithmeClustering<PixelData> kmeans(int k) {
-            return new KMeansGenerique<>(k, 100);
+            return new KMeans<>(k, 100);
         }
 
         public static AlgorithmeClustering<PixelData> dbscan(double eps, int minPts) {
-            return new DBSCANGenerique<>(eps, minPts);
+            return new DBSCAN<>(eps, minPts);
         }
 
         public static AlgorithmeClustering<PixelData> dbscanOpti(double eps, int minPts) {
-            return new DBSCANOptimiseGenerique<>(eps, minPts);
+            return new DBSCANOptimise<>(eps, minPts);
         }
 
     }
@@ -156,9 +146,7 @@ public class ClusteringManager {
         public final PixelData[] pixels;
 
 
-        public ResultatClustering(int[] affectations, int nombreClusters,
-                                  String algorithme, String metrique,
-                                  long dureeMs, PixelData[] pixels) {
+        public ResultatClustering(int[] affectations, int nombreClusters, String algorithme, String metrique, long dureeMs, PixelData[] pixels) {
             this.affectations = affectations;
             this.nombreClusters = nombreClusters;
             this.algorithme = algorithme;
