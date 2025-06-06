@@ -5,7 +5,7 @@ import java.util.Map;
 
 /**
  * Classe pour gérer la correspondance entre couleurs et noms de biomes.
- * Basée sur l'exemple donné dans le sujet (Figure 6).
+ * On a utilisé les palettes du sujet
  */
 public class BiomeEtiquetage {
 
@@ -20,16 +20,17 @@ public class BiomeEtiquetage {
      * Initialise les couleurs de référence pour chaque type de biome.
      */
     private void initialiserBiomesReference() {
-        // Selon l'exemple de la Figure 6 du sujet
-        biomesReference.put("Océan profond", new Color(0, 0, 128));      // Bleu foncé
-        biomesReference.put("Eau peu profonde", new Color(0, 191, 255)); // Bleu clair
-        biomesReference.put("Plage", new Color(255, 255, 224));          // Beige
-        biomesReference.put("Plaines", new Color(0, 255, 0));            // Vert
-        biomesReference.put("Forêt", new Color(0, 128, 0));              // Vert foncé
-        biomesReference.put("Savane", new Color(255, 215, 0));           // Jaune doré
-        biomesReference.put("Désert", new Color(255, 165, 0));           // Orange
-        biomesReference.put("Montagne", new Color(128, 128, 128));       // Gris
-        biomesReference.put("Neige", new Color(255, 255, 255));          // Blanc
+        // palette du sujet (bug un peu avec Désert/Glacier et Eau profonde et pas profonde, parfois ça confond)
+        biomesReference.put("Tundra", new Color(71, 70, 61));
+        biomesReference.put("Taïga", new Color(43, 50, 35));
+        biomesReference.put("Forêt tempérée", new Color(59, 66, 43));
+        biomesReference.put("Forêt tropicale", new Color(46, 64, 34));
+        biomesReference.put("Savane", new Color(84, 106, 70));
+        biomesReference.put("Prairie", new Color(104, 95, 82));
+        biomesReference.put("Désert", new Color(152, 140, 120));
+        biomesReference.put("Glacier", new Color(200, 200, 200));
+        biomesReference.put("Eau peu profonde", new Color(49, 83, 100));
+        biomesReference.put("Eau profonde", new Color(12, 31, 47));
     }
 
     /**
