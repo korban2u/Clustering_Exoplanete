@@ -77,7 +77,7 @@ public class MainEcosystemes {
 
             // 6. Détecter les écosystèmes pour chaque biome
             System.out.println("\nÉtape 2 : Détection des écosystèmes avec DBSCAN...");
-            Map<Integer, int[]> ecosystemesParBiome = DetectionEcosystemes.detecterEcosystemes(
+            Map<Integer, int[]> ecosystemesParBiome = DetectionEcosystemesOptimise.detecterEcosystemesOptimise(
                     image, affectationsBiomes, COULEURS_BIOMES.size(), eps, minPts);
 
             // 7. Étiqueter les biomes en utilisant EtiqueteurBiomes
