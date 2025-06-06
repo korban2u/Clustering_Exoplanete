@@ -1,7 +1,7 @@
 package validation;
 
 import clustering.ClusteringManager.ResultatClustering;
-import donnees.PixelData;
+import outils.PixelData;
 import metriques.MetriqueDistance;
 
 import java.awt.image.BufferedImage;

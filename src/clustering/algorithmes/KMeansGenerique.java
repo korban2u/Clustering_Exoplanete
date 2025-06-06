@@ -1,10 +1,9 @@
 package clustering.algorithmes;
 
-import clustering.AlgorithmeClusteringAbstrait;
-import clustering.CalculateurCentroide;
+import clustering.centroides.CalculateurCentroide;
 import clustering.centroides.CalculateurCentroidePixel;
 import clustering.centroides.CalculateurCentroidePixel.TypeCentroide;
-import donnees.PixelData;
+import outils.PixelData;
 import metriques.MetriqueDistance;
 
 import java.awt.*;

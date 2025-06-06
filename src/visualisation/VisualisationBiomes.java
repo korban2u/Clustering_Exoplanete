@@ -1,15 +1,13 @@
 package visualisation;
 
 import clustering.ClusteringManager.ResultatClustering;
-import donnees.PixelData;
+import outils.PixelData;
 import outils.OutilsImage;
 import biomes.BiomeEtiquetage;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.*;
-import java.util.List;
 
 /**
  * Classe pour visualiser et sauvegarder les biomes détectés.

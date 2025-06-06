@@ -1,4 +1,4 @@
-package clustering;
+package clustering.centroides;
 
 /**
  * Interface pour calculer le centroïde d'un ensemble d'objets.

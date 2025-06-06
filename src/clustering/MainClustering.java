@@ -1,7 +1,7 @@
 package clustering;
 
 import clustering.ClusteringManager.*;
-import donnees.PixelData;
+import outils.PixelData;
 import outils.OutilsImage;
 import java.awt.image.BufferedImage;
 import java.io.IOException;

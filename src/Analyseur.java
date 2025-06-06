@@ -1,6 +1,6 @@
 import clustering.ClusteringManager;
 import clustering.ClusteringManager.*;
-import donnees.PixelData;
+import outils.PixelData;
 import filtres.FiltreFlouGaussien;
 import metriques.couleur.MetriqueCouleur;
 import metriques.position.MetriquePositionEuclidienne;

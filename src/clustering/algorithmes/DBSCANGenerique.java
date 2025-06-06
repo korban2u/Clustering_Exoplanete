@@ -1,6 +1,5 @@
 package clustering.algorithmes;
 
-import clustering.AlgorithmeClusteringAbstrait;
 import metriques.MetriqueDistance;
 import java.util.*;
 

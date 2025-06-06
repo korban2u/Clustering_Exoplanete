@@ -5,7 +5,7 @@ import metriques.MetriqueDistance;
 import metriques.couleur.MetriqueCouleur;
 import metriques.position.MetriquePositionEuclidienne;
 import normeCouleurs.*;
-import donnees.PixelData;
+import outils.PixelData;
 import java.awt.image.BufferedImage;
 import java.awt.Color;
 import java.util.*;

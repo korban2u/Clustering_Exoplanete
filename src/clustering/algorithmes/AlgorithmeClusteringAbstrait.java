@@ -1,6 +1,4 @@
-package clustering;
-
-import metriques.MetriqueDistance;
+package clustering.algorithmes;
 
 /**
  * Classe abstraite qui fournit les fonctionnalités communes à tous les algorithmes.

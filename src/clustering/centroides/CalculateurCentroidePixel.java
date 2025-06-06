@@ -1,7 +1,6 @@
 package clustering.centroides;
 
-import clustering.CalculateurCentroide;
-import donnees.PixelData;
+import outils.PixelData;
 import java.awt.Color;
 
 /**

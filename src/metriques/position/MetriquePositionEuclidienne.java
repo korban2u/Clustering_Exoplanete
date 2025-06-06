@@ -1,7 +1,7 @@
 package metriques.position;
 
 import metriques.MetriqueDistance;
-import donnees.PixelData;
+import outils.PixelData;
 
 /**
  * Métrique de distance euclidienne pour les positions de pixels.

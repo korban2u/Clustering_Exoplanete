@@ -1,7 +1,7 @@
 package visualisation;
 
 import clustering.ClusteringManager.ResultatClustering;
-import donnees.PixelData;
+import outils.PixelData;
 import outils.OutilsImage;
 
 import java.awt.*;

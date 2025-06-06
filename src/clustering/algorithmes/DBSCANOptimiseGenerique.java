@@ -1,8 +1,7 @@
 package clustering.algorithmes;
 
-import clustering.AlgorithmeClusteringAbstrait;
 import metriques.MetriqueDistance;
-import donnees.PixelData;
+import outils.PixelData;
 import java.util.*;
 
 /**

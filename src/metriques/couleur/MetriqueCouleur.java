@@ -1,9 +1,8 @@
 package metriques.couleur;
 
 import metriques.MetriqueDistance;
-import donnees.PixelData;
+import outils.PixelData;
 import normeCouleurs.NormeCouleurs;
-import java.awt.Color;
 
 /**
  * Adaptateur qui permet d'utiliser les normes de couleurs existantes

@@ -1,4 +1,4 @@
-package clustering;
+package clustering.algorithmes;
 
 import metriques.MetriqueDistance;
 
