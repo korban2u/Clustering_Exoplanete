@@ -32,17 +32,4 @@ public interface AlgorithmeClustering<T> {
      */
     String getNom();
 
-    /**
-     * Active ou désactive le multithreading.
-     *
-     * @param actif true pour activer, false pour désactiver
-     */
-    void setMultithreading(boolean actif);
-
-    /**
-     * Indique si le multithreading est activé.
-     *
-     * @return true si le multithreading est activé
-     */
-    boolean isMultithreadingActif();
 }

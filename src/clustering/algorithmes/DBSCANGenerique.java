@@ -31,11 +31,6 @@ public class DBSCANGenerique<T> extends AlgorithmeClusteringAbstrait<T> {
         int[] clusters = new int[n];
         Arrays.fill(clusters, NON_VISITE);
 
-        // Pré-calculer les voisinages si multithreading activé
-        List<List<Integer>> voisinages = null;
-        if (multithreadingActif) {
-            voisinages = precalculerVoisinagesParallele(donnees, metrique);
-        }
 
         int clusterActuel = 0;
 
@@ -46,16 +41,12 @@ public class DBSCANGenerique<T> extends AlgorithmeClusteringAbstrait<T> {
 
             // Trouver les voisins
             List<Integer> voisins;
-            if (voisinages != null) {
-                voisins = voisinages.get(i);
-            } else {
-                voisins = trouverVoisins(donnees, i, metrique);
-            }
+            voisins = trouverVoisins(donnees, i, metrique);
 
             if (voisins.size() < minPts) {
                 clusters[i] = BRUIT;
             } else {
-                expandCluster(donnees, clusters, i, voisins, clusterActuel, metrique, voisinages);
+                expandCluster(donnees, clusters, i, voisins, clusterActuel, metrique);
                 clusterActuel++;
             }
         }
@@ -72,28 +63,7 @@ public class DBSCANGenerique<T> extends AlgorithmeClusteringAbstrait<T> {
         return clusters;
     }
 
-    /**
-     * Pré-calcule tous les voisinages en parallèle pour accélérer DBSCAN.
-     */
-    private List<List<Integer>> precalculerVoisinagesParallele(T[] donnees, MetriqueDistance<T> metrique) {
-        int n = donnees.length;
-        List<List<Integer>> voisinages = new ArrayList<>(n);
 
-        // Initialiser les listes
-        for (int i = 0; i < n; i++) {
-            voisinages.add(new ArrayList<>());
-        }
-
-        // Calculer les voisinages en parallèle
-        executerEnParallele(n, (debut, fin) -> {
-            for (int i = debut; i < fin; i++) {
-                List<Integer> voisins = trouverVoisins(donnees, i, metrique);
-                voisinages.set(i, voisins);
-            }
-        });
-
-        return voisinages;
-    }
 
     /**
      * Trouve tous les points dans le rayon eps du point donné.
@@ -116,7 +86,7 @@ public class DBSCANGenerique<T> extends AlgorithmeClusteringAbstrait<T> {
      */
     private void expandCluster(T[] donnees, int[] clusters, int pointIndex,
                                List<Integer> voisins, int clusterId,
-                               MetriqueDistance<T> metrique, List<List<Integer>> voisinagesPrecalcules) {
+                               MetriqueDistance<T> metrique) {
         clusters[pointIndex] = clusterId;
 
         Queue<Integer> aTraiter = new LinkedList<>(voisins);
@@ -129,12 +99,7 @@ public class DBSCANGenerique<T> extends AlgorithmeClusteringAbstrait<T> {
                 clusters[voisinIndex] = clusterId;
 
                 // Trouver les voisins du voisin
-                List<Integer> voisinsDuVoisin;
-                if (voisinagesPrecalcules != null) {
-                    voisinsDuVoisin = voisinagesPrecalcules.get(voisinIndex);
-                } else {
-                    voisinsDuVoisin = trouverVoisins(donnees, voisinIndex, metrique);
-                }
+                List<Integer> voisinsDuVoisin = trouverVoisins(donnees, voisinIndex, metrique);
 
                 if (voisinsDuVoisin.size() >= minPts) {
                     for (int nouveauVoisin : voisinsDuVoisin) {

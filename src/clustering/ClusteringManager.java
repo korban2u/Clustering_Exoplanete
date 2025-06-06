@@ -17,7 +17,6 @@ import java.util.*;
  */
 public class ClusteringManager {
 
-    private boolean multithreadingActif = false;
 
     /**
      * Effectue un clustering sur une image selon le type de données voulu.
@@ -31,8 +30,6 @@ public class ClusteringManager {
         // Choisir la métrique appropriée
         MetriqueDistance<PixelData> metrique = obtenirMetrique(type);
 
-        // Configurer le multithreading
-        algorithme.setMultithreading(multithreadingActif);
 
         // Exécuter le clustering
         long debut = System.currentTimeMillis();
@@ -57,7 +54,6 @@ public class ClusteringManager {
                                                       AlgorithmeClustering<PixelData> algorithme,
                                                       TypeClustering type) {
         MetriqueDistance<PixelData> metrique = obtenirMetrique(type);
-        algorithme.setMultithreading(multithreadingActif);
 
         long debut = System.currentTimeMillis();
         int[] affectations = algorithme.executer(pixels, metrique);
@@ -118,12 +114,6 @@ public class ClusteringManager {
         }
     }
 
-    /**
-     * Active ou désactive le multithreading pour tous les algorithmes.
-     */
-    public void setMultithreading(boolean actif) {
-        this.multithreadingActif = actif;
-    }
 
     /**
      * Méthodes factory pour créer facilement des algorithmes.

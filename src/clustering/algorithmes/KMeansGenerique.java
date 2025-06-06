@@ -73,11 +73,9 @@ public class KMeansGenerique<T> extends AlgorithmeClusteringAbstrait<T> {
             int[] nouvellesAffectations = new int[n];
 
             // Étape 1 : Affecter chaque point au centroïde le plus proche
-            if (multithreadingActif) {
-                affecterPointsParallele(donnees, centroides, nouvellesAffectations, metrique);
-            } else {
-                affecterPointsSequentiel(donnees, centroides, nouvellesAffectations, metrique);
-            }
+
+            affecterPointsSequentiel(donnees, centroides, nouvellesAffectations, metrique);
+
 
             // Vérifier la convergence
             if (Arrays.equals(affectations, nouvellesAffectations)) {
@@ -97,7 +95,8 @@ public class KMeansGenerique<T> extends AlgorithmeClusteringAbstrait<T> {
      */
     @SuppressWarnings("unchecked")
     private T[] initialiserCentroides(T[] donnees) {
-        T[] centroides = (T[]) new Object[k];
+        Class<?> componentType = donnees.getClass().getComponentType();
+        T[] centroides = (T[]) java.lang.reflect.Array.newInstance(componentType, k);
         boolean[] choisis = new boolean[donnees.length];
 
         for (int i = 0; i < k; i++) {
@@ -123,17 +122,6 @@ public class KMeansGenerique<T> extends AlgorithmeClusteringAbstrait<T> {
         }
     }
 
-    /**
-     * Affecte chaque point au centroïde le plus proche (version parallèle).
-     */
-    private void affecterPointsParallele(T[] donnees, T[] centroides,
-                                         int[] affectations, MetriqueDistance<T> metrique) {
-        executerEnParallele(donnees.length, (debut, fin) -> {
-            for (int i = debut; i < fin; i++) {
-                affectations[i] = trouverCentroideLePlusProche(donnees[i], centroides, metrique);
-            }
-        });
-    }
 
     /**
      * Trouve l'indice du centroïde le plus proche d'un point donné.
@@ -158,7 +146,9 @@ public class KMeansGenerique<T> extends AlgorithmeClusteringAbstrait<T> {
      */
     @SuppressWarnings("unchecked")
     private T[] mettreAJourCentroides(T[] donnees, int[] affectations) {
-        T[] nouveauxCentroides = (T[]) new Object[k];
+        // Utiliser la classe du premier élément pour créer le tableau
+        Class<?> componentType = donnees.getClass().getComponentType();
+        T[] nouveauxCentroides = (T[]) java.lang.reflect.Array.newInstance(componentType, k);
 
         // Pour chaque cluster
         for (int cluster = 0; cluster < k; cluster++) {
@@ -175,7 +165,8 @@ public class KMeansGenerique<T> extends AlgorithmeClusteringAbstrait<T> {
             }
 
             // Créer un tableau avec les points du cluster
-            T[] pointsCluster = (T[]) new Object[count];
+            // Utiliser Array.newInstance pour créer le tableau du bon type
+            T[] pointsCluster = (T[]) java.lang.reflect.Array.newInstance(componentType, count);
             int index = 0;
             for (int i = 0; i < affectations.length; i++) {
                 if (affectations[i] == cluster) {

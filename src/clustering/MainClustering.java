@@ -18,9 +18,6 @@ public class MainClustering {
         // Créer le gestionnaire
         ClusteringManager manager = new ClusteringManager();
 
-        // Activer le multithreading pour de meilleures performances
-        manager.setMultithreading(true);
-
         System.out.println("=== Détection de biomes ===\n");
 
         // Exemple 1: K-Means avec distance CIELAB pour les biomes
@@ -81,30 +78,6 @@ public class MainClustering {
             System.out.println("  - K-Means: " + ecosystemesKMeans.nombreClusters + " écosystèmes");
         }
 
-        // Désactiver le multithreading pour comparer
-        System.out.println("\n=== Comparaison avec/sans multithreading ===\n");
-
-        manager.setMultithreading(false);
-        long debut = System.currentTimeMillis();
-        ResultatClustering sansMT = manager.clusteriserImage(
-                image,
-                Algorithmes.kmeans(7),
-                TypeClustering.BIOMES_CIELAB
-        );
-        long dureeSansMT = System.currentTimeMillis() - debut;
-
-        manager.setMultithreading(true);
-        debut = System.currentTimeMillis();
-        ResultatClustering avecMT = manager.clusteriserImage(
-                image,
-                Algorithmes.kmeans(7),
-                TypeClustering.BIOMES_CIELAB
-        );
-        long dureeAvecMT = System.currentTimeMillis() - debut;
-
-        System.out.println("Sans multithreading: " + dureeSansMT + " ms");
-        System.out.println("Avec multithreading: " + dureeAvecMT + " ms");
-        System.out.println("Accélération: " + String.format("%.2fx", (double)dureeSansMT / dureeAvecMT));
     }
 
     private static void afficherResultat(ResultatClustering resultat) {
