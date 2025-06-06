@@ -3,6 +3,8 @@ package visualisation;
 import clustering.ClusteringManager.ResultatClustering;
 import outils.PixelData;
 import outils.OutilsImage;
+import validation.SilhouetteScore;
+import metriques.position.MetriquePositionEuclidienne;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -11,6 +13,7 @@ import java.util.Random;
 
 /**
  * Classe pour visualiser et sauvegarder les écosystèmes détectés dans chaque biome.
+ * Version améliorée avec indices de validation dans les rapports.
  */
 public class VisualisationEcosystemes {
 
@@ -34,6 +37,7 @@ public class VisualisationEcosystemes {
     };
 
     private final Random random = new Random();
+    private final SilhouetteScore silhouetteScore = new SilhouetteScore();
 
     /**
      * Crée une image montrant les écosystèmes d'un biome avec des couleurs distinctes.
@@ -169,51 +173,115 @@ public class VisualisationEcosystemes {
         );
         OutilsImage.sauverImage(ecosystemesFondClair, dossierBiome + "/ecosystemes_fond_clair.jpg");
 
-        // 3. Créer un rapport pour ce biome
-        creerRapportEcosystemes(resultatEcosystemes, pixelsBiome,
+        // 3. Créer un rapport pour ce biome avec indices de validation
+        creerRapportEcosystemes(resultatEcosystemes, pixelsBiome, nomBiome,
                 dossierBiome + "/rapport_ecosystemes.txt");
     }
 
     /**
-     * Crée un rapport textuel sur les écosystèmes détectés.
+     * Crée un rapport textuel sur les écosystèmes détectés avec indices de validation.
      */
     private void creerRapportEcosystemes(ResultatClustering resultat,
                                          PixelData[] pixelsBiome,
+                                         String nomBiome,
                                          String cheminFichier) throws IOException {
         StringBuilder rapport = new StringBuilder();
         rapport.append("=== RAPPORT DES ÉCOSYSTÈMES ===\n\n");
+        rapport.append("Biome analysé: ").append(nomBiome).append("\n");
         rapport.append("Algorithme utilisé: ").append(resultat.algorithme).append("\n");
         rapport.append("Métrique de distance: ").append(resultat.metrique).append("\n");
         rapport.append("Temps d'exécution: ").append(resultat.dureeMs).append(" ms\n");
         rapport.append("Nombre d'écosystèmes détectés: ").append(resultat.nombreClusters).append("\n\n");
 
-        rapport.append("DÉTAIL DES ÉCOSYSTÈMES:\n");
+        // AJOUT DES INDICES DE VALIDATION
+        rapport.append("=== INDICES DE VALIDATION ===\n");
+
+        try {
+            // Silhouette Score pour les écosystèmes
+            MetriquePositionEuclidienne metriquePos = new MetriquePositionEuclidienne();
+            double silhouette = silhouetteScore.calculer(resultat, metriquePos);
+
+            rapport.append(String.format("Score de Silhouette: %.4f\n", silhouette));
+            rapport.append("  → Valeur entre -1 et 1, plus proche de 1 = meilleur\n");
+            rapport.append("  → Interprétation: ");
+            if (silhouette > 0.7) rapport.append("Écosystèmes très bien séparés");
+            else if (silhouette > 0.5) rapport.append("Bonne séparation des écosystèmes");
+            else if (silhouette > 0.25) rapport.append("Séparation faible");
+            else rapport.append("Écosystèmes mal définis ou chevauchants");
+            rapport.append("\n\n");
+
+            // Statistiques supplémentaires pour DBSCAN
+            if (resultat.algorithme.contains("DBSCAN")) {
+                int pointsBruit = 0;
+                for (int aff : resultat.affectations) {
+                    if (aff == -1) pointsBruit++;
+                }
+                double pourcentageBruit = (pointsBruit * 100.0) / resultat.affectations.length;
+                rapport.append(String.format("Points de bruit: %d (%.2f%%)\n",
+                        pointsBruit, pourcentageBruit));
+                rapport.append("  → Un faible pourcentage de bruit (<5%) indique de bons paramètres\n\n");
+            }
+
+        } catch (Exception e) {
+            rapport.append("Erreur lors du calcul des indices: ").append(e.getMessage()).append("\n\n");
+        }
+
+        rapport.append("=== DÉTAIL DES ÉCOSYSTÈMES ===\n");
+
+        // Analyser chaque écosystème
         for (int i = 0; i < resultat.nombreClusters; i++) {
             int nbPixels = 0;
+            double sumX = 0, sumY = 0;
+            double minX = Double.MAX_VALUE, maxX = Double.MIN_VALUE;
+            double minY = Double.MAX_VALUE, maxY = Double.MIN_VALUE;
+
+            // Calculer les statistiques de l'écosystème
             for (int j = 0; j < resultat.affectations.length; j++) {
-                if (resultat.affectations[j] == i) nbPixels++;
-            }
-
-            double pourcentage = (nbPixels * 100.0) / pixelsBiome.length;
-
-            rapport.append(String.format("Écosystème %d:\n", i));
-            rapport.append(String.format("  - Nombre de pixels: %d (%.2f%% du biome)\n",
-                    nbPixels, pourcentage));
-
-
-            // Calculer le centre approximatif
-            if (nbPixels > 0) {
-                int sumX = 0, sumY = 0;
-                for (int j = 0; j < resultat.affectations.length; j++) {
-                    if (resultat.affectations[j] == i) {
-                        sumX += pixelsBiome[j].getX();
-                        sumY += pixelsBiome[j].getY();
-                    }
+                if (resultat.affectations[j] == i) {
+                    nbPixels++;
+                    PixelData pixel = pixelsBiome[j];
+                    sumX += pixel.getX();
+                    sumY += pixel.getY();
+                    minX = Math.min(minX, pixel.getX());
+                    maxX = Math.max(maxX, pixel.getX());
+                    minY = Math.min(minY, pixel.getY());
+                    maxY = Math.max(maxY, pixel.getY());
                 }
-                rapport.append(String.format("  - Position centrale: (%d, %d)\n",
-                        sumX / nbPixels, sumY / nbPixels));
             }
-            rapport.append("\n");
+
+            if (nbPixels > 0) {
+                double pourcentage = (nbPixels * 100.0) / pixelsBiome.length;
+                double centreX = sumX / nbPixels;
+                double centreY = sumY / nbPixels;
+
+                rapport.append(String.format("\nÉcosystème %d:\n", i));
+                rapport.append(String.format("  - Nombre de pixels: %d (%.2f%% du biome)\n",
+                        nbPixels, pourcentage));
+                rapport.append(String.format("  - Position centrale: (%.0f, %.0f)\n",
+                        centreX, centreY));
+                rapport.append(String.format("  - Étendue spatiale: %.0f x %.0f pixels\n",
+                        maxX - minX + 1, maxY - minY + 1));
+
+                // Calculer la compacité (ratio surface/périmètre approximatif)
+                double surface = nbPixels;
+                double diagonale = Math.sqrt((maxX-minX)*(maxX-minX) + (maxY-minY)*(maxY-minY));
+                double compacite = surface / (diagonale * diagonale);
+                rapport.append(String.format("  - Compacité: %.3f", compacite));
+                if (compacite > 0.7) rapport.append(" (forme compacte)");
+                else if (compacite > 0.4) rapport.append(" (forme moyennement compacte)");
+                else rapport.append(" (forme étalée ou fragmentée)");
+                rapport.append("\n");
+            }
+        }
+
+        // Ajouter un résumé global
+        rapport.append("\n=== RÉSUMÉ ===\n");
+        if (resultat.nombreClusters > 5) {
+            rapport.append("→ Nombreux écosystèmes détectés, le biome est très fragmenté\n");
+        } else if (resultat.nombreClusters > 2) {
+            rapport.append("→ Fragmentation modérée du biome\n");
+        } else {
+            rapport.append("→ Biome peu fragmenté, écosystèmes bien définis\n");
         }
 
         // Écrire le fichier

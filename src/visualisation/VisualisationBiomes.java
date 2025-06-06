@@ -3,7 +3,11 @@ package visualisation;
 import clustering.ClusteringManager.ResultatClustering;
 import outils.PixelData;
 import outils.OutilsImage;
-import biomes.BiomeEtiquetage;
+import visualisation.BiomeEtiquetage;
+import validation.DaviesBouldinIndex;
+import validation.SilhouetteScore;
+import metriques.couleur.MetriqueCouleur;
+import normeCouleurs.*;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -11,13 +15,18 @@ import java.io.IOException;
 
 /**
  * Classe pour visualiser et sauvegarder les biomes détectés.
+ * Version améliorée avec indices de validation dans les rapports.
  */
 public class VisualisationBiomes {
 
     private final BiomeEtiquetage etiquetage;
+    private final DaviesBouldinIndex daviesBouldin;
+    private final SilhouetteScore silhouetteScore;
 
     public VisualisationBiomes() {
         this.etiquetage = new BiomeEtiquetage();
+        this.daviesBouldin = new DaviesBouldinIndex();
+        this.silhouetteScore = new SilhouetteScore();
     }
 
     /**
@@ -156,12 +165,12 @@ public class VisualisationBiomes {
             OutilsImage.sauverImage(biomeIsole, nomFichier);
         }
 
-        // 4. Créer un fichier récapitulatif
+        // 4. Créer un fichier récapitulatif avec indices de validation
         creerFichierRecapitulatif(resultat, etiquettes, dossierBiomes + "/rapport_biomes.txt");
     }
 
     /**
-     * Crée un fichier texte récapitulatif des biomes détectés.
+     * Crée un fichier texte récapitulatif des biomes détectés avec indices de validation.
      */
     private void creerFichierRecapitulatif(ResultatClustering resultat,
                                            String[] etiquettes,
@@ -173,22 +182,92 @@ public class VisualisationBiomes {
         rapport.append("Temps d'exécution: ").append(resultat.dureeMs).append(" ms\n");
         rapport.append("Nombre de biomes détectés: ").append(resultat.nombreClusters).append("\n\n");
 
-        rapport.append("DÉTAIL DES BIOMES:\n");
+        // AJOUT DES INDICES DE VALIDATION
+        rapport.append("=== INDICES DE VALIDATION ===\n");
+
+        // Calculer les indices selon la métrique utilisée
+        try {
+            NormeCouleurs norme = determinerNormeCouleur(resultat.metrique);
+            MetriqueCouleur metrique = new MetriqueCouleur(norme);
+
+            // Davies-Bouldin (pour K-Means principalement)
+            if (resultat.algorithme.contains("K-Means")) {
+                double dbIndex = daviesBouldin.calculer(resultat, metrique);
+                rapport.append(String.format("Indice de Davies-Bouldin: %.4f\n", dbIndex));
+                rapport.append("  → Plus l'indice est faible, meilleur est le clustering\n");
+                rapport.append("  → Valeurs typiques: 0.5-2.0 (< 1.0 = bon clustering)\n\n");
+            }
+
+            // Silhouette (pour tous les algorithmes)
+            double silhouette = silhouetteScore.calculer(resultat, metrique);
+            rapport.append(String.format("Score de Silhouette: %.4f\n", silhouette));
+            rapport.append("  → Valeur entre -1 et 1, plus proche de 1 = meilleur\n");
+            rapport.append("  → Interprétation: ");
+            if (silhouette > 0.7) rapport.append("Structure forte");
+            else if (silhouette > 0.5) rapport.append("Structure raisonnable");
+            else if (silhouette > 0.25) rapport.append("Structure faible");
+            else rapport.append("Pas de structure claire");
+            rapport.append("\n\n");
+
+        } catch (Exception e) {
+            rapport.append("Erreur lors du calcul des indices: ").append(e.getMessage()).append("\n\n");
+        }
+
+        rapport.append("=== DÉTAIL DES BIOMES ===\n");
         for (int i = 0; i < resultat.nombreClusters; i++) {
             Color couleur = resultat.getCouleurMoyenneCluster(i);
             int nbPixels = resultat.getPixelsCluster(i).length;
             double pourcentage = (nbPixels * 100.0) / resultat.pixels.length;
 
-            rapport.append(String.format("Biome %d: %s\n", i, etiquettes[i]));
+            rapport.append(String.format("\nBiome %d: %s\n", i, etiquettes[i]));
             rapport.append(String.format("  - Couleur moyenne: RGB(%d, %d, %d)\n",
                     couleur.getRed(), couleur.getGreen(), couleur.getBlue()));
             rapport.append(String.format("  - Nombre de pixels: %d (%.2f%%)\n",
                     nbPixels, pourcentage));
-            rapport.append("\n");
+
+            // Calculer la dispersion du biome
+            double dispersion = calculerDispersionBiome(resultat, i);
+            rapport.append(String.format("  - Dispersion interne: %.2f\n", dispersion));
         }
 
         // Écrire le fichier
         java.nio.file.Files.write(java.nio.file.Paths.get(cheminFichier),
                 rapport.toString().getBytes());
+    }
+
+    /**
+     * Détermine la norme de couleur à partir du nom de la métrique.
+     */
+    private NormeCouleurs determinerNormeCouleur(String nomMetrique) {
+        if (nomMetrique.contains("CIELAB")) {
+            return new NormeCielab();
+        } else if (nomMetrique.contains("CIE94")) {
+            return new NormeCie94();
+        } else if (nomMetrique.contains("Redmean")) {
+            return new NormeRedmean();
+        } else {
+            return new NormeEuclidienne();
+        }
+    }
+
+    /**
+     * Calcule la dispersion d'un biome (écart-type des distances au centroïde).
+     */
+    private double calculerDispersionBiome(ResultatClustering resultat, int biome) {
+        PixelData[] pixels = resultat.getPixelsCluster(biome);
+        if (pixels.length == 0) return 0.0;
+
+        Color couleurMoyenne = resultat.getCouleurMoyenneCluster(biome);
+        double sommeCarres = 0.0;
+
+        for (PixelData pixel : pixels) {
+            Color c = pixel.getCouleur();
+            double dr = c.getRed() - couleurMoyenne.getRed();
+            double dg = c.getGreen() - couleurMoyenne.getGreen();
+            double db = c.getBlue() - couleurMoyenne.getBlue();
+            sommeCarres += dr*dr + dg*dg + db*db;
+        }
+
+        return Math.sqrt(sommeCarres / pixels.length);
     }
 }
