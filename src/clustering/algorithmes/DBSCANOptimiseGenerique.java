@@ -6,21 +6,22 @@ import donnees.PixelData;
 import java.util.*;
 
 /**
- * Version optimisée de DBSCAN générique avec index spatial.
- * Utilise une grille spatiale pour accélérer la recherche de voisins
- * quand on travaille avec des positions.
+ * Version optimisée de DBSCAN avec grille spatiale.
+ * FONCTIONNE UNIQUEMENT AVEC des coordonnées.
  *
- * @param <T> Le type de données à clustériser
+ * @param <T> Le type de données à clustériser (doit être PixelData)
  */
 public class DBSCANOptimiseGenerique<T> extends AlgorithmeClusteringAbstrait<T> {
 
     private final double eps;
     private final int minPts;
 
-    // Pour l'optimisation spatiale
-    private boolean utilisationIndexSpatial = true;
+    // Grille spatiale
     private Map<String, List<Integer>> grilleSpatiale;
     private int tailleGrille;
+
+    // Limites spatiales pour la grille
+    private double minX, minY, maxX, maxY;
 
     // États des points
     private static final int NON_VISITE = -2;
@@ -33,24 +34,22 @@ public class DBSCANOptimiseGenerique<T> extends AlgorithmeClusteringAbstrait<T> 
         this.tailleGrille = (int) Math.ceil(eps);
     }
 
-    /**
-     * Active l'utilisation de l'index spatial pour les données de type PixelData.
-     * Améliore significativement les performances pour le clustering par position.
-     */
-    public void activerIndexSpatial() {
-        this.utilisationIndexSpatial = true;
-    }
-
     @Override
     public int[] executer(T[] donnees, MetriqueDistance<T> metrique) {
+        // Vérifier que ce sont bien des PixelData
+        if (donnees.length > 0 && !(donnees[0] instanceof PixelData)) {
+            throw new IllegalArgumentException(
+                    "Ce DBSCAN fonctionne qu'avec des PixelData (il faut des coordonnées). " +
+                            "Utilisez DBSCANGenerique pour d'autres types de données."
+            );
+        }
+
         int n = donnees.length;
         int[] clusters = new int[n];
         Arrays.fill(clusters, NON_VISITE);
 
-        // Construire l'index spatial si applicable
-        if (utilisationIndexSpatial && donnees.length > 0 && donnees[0] instanceof PixelData) {
-            construireGrilleSpatiale(donnees);
-        }
+        // Construire l'index spatial
+        construireGrilleSpatiale(donnees);
 
         int clusterActuel = 0;
 
@@ -59,13 +58,8 @@ public class DBSCANOptimiseGenerique<T> extends AlgorithmeClusteringAbstrait<T> 
                 continue;
             }
 
-            // Trouver les voisins
-            List<Integer> voisins;
-            if (utilisationIndexSpatial && grilleSpatiale != null) {
-                voisins = trouverVoisinsOptimise(donnees, i, metrique);
-            } else {
-                voisins = trouverVoisins(donnees, i, metrique);
-            }
+            // Trouver les voisins avec la grille spatiale
+            List<Integer> voisins = trouverVoisinsOptimise(donnees, i, metrique);
 
             if (voisins.size() < minPts) {
                 clusters[i] = BRUIT;
@@ -84,22 +78,50 @@ public class DBSCANOptimiseGenerique<T> extends AlgorithmeClusteringAbstrait<T> 
             }
         }
 
+        // Libérer la mémoire
+        grilleSpatiale.clear();
+
         return clusters;
     }
 
     /**
-     * Construit une grille spatiale pour accélérer les recherches.
+     * Construit la grille spatiale pour accélérer les recherches.
      */
     @SuppressWarnings("unchecked")
     private void construireGrilleSpatiale(T[] donnees) {
         grilleSpatiale = new HashMap<>();
 
+        // Trouver les limites spatiales
+        minX = Double.MAX_VALUE;
+        minY = Double.MAX_VALUE;
+        maxX = Double.MIN_VALUE;
+        maxY = Double.MIN_VALUE;
+
+        for (T donnee : donnees) {
+            PixelData pixel = (PixelData) donnee;
+            minX = Math.min(minX, pixel.getX());
+            minY = Math.min(minY, pixel.getY());
+            maxX = Math.max(maxX, pixel.getX());
+            maxY = Math.max(maxY, pixel.getY());
+        }
+
+        // Ajuster la taille de la grille en fonction de la densité
+        double largeur = maxX - minX + 1;
+        double hauteur = maxY - minY + 1;
+        double densite = donnees.length / (largeur * hauteur);
+
+        // Adapter la taille de grille selon la densité
+        if (densite > 0.5) {
+            tailleGrille = (int) Math.max(1, eps / 2);
+        } else if (densite < 0.1) {
+            tailleGrille = (int) Math.ceil(eps * 2);
+        }
+
+        // Placer chaque point dans la grille
         for (int i = 0; i < donnees.length; i++) {
-            if (donnees[i] instanceof PixelData) {
-                PixelData pixel = (PixelData) donnees[i];
-                String cle = getCleGrille(pixel.getX(), pixel.getY());
-                grilleSpatiale.computeIfAbsent(cle, k -> new ArrayList<>()).add(i);
-            }
+            PixelData pixel = (PixelData) donnees[i];
+            String cle = getCleGrille(pixel.getX(), pixel.getY());
+            grilleSpatiale.computeIfAbsent(cle, k -> new ArrayList<>()).add(i);
         }
     }
 
@@ -107,36 +129,41 @@ public class DBSCANOptimiseGenerique<T> extends AlgorithmeClusteringAbstrait<T> 
      * Génère une clé pour la cellule de grille.
      */
     private String getCleGrille(int x, int y) {
-        int gx = x / tailleGrille;
-        int gy = y / tailleGrille;
+        int gx = (int) ((x - minX) / tailleGrille);
+        int gy = (int) ((y - minY) / tailleGrille);
         return gx + "," + gy;
     }
 
     /**
-     * Version optimisée de la recherche de voisins utilisant l'index spatial.
+     * Recherche de voisins optimisée avec l'index spatial.
      */
     @SuppressWarnings("unchecked")
     private List<Integer> trouverVoisinsOptimise(T[] donnees, int pointIndex, MetriqueDistance<T> metrique) {
         List<Integer> voisins = new ArrayList<>();
 
-        if (!(donnees[pointIndex] instanceof PixelData)) {
-            return trouverVoisins(donnees, pointIndex, metrique);
-        }
-
         PixelData pixel = (PixelData) donnees[pointIndex];
-        int gx = pixel.getX() / tailleGrille;
-        int gy = pixel.getY() / tailleGrille;
-        int rayonGrille = (int) Math.ceil(eps / tailleGrille);
+        int gx = (int) ((pixel.getX() - minX) / tailleGrille);
+        int gy = (int) ((pixel.getY() - minY) / tailleGrille);
 
-        // Vérifier uniquement les cellules voisines pertinentes
-        for (int dx = -rayonGrille; dx <= rayonGrille; dx++) {
-            for (int dy = -rayonGrille; dy <= rayonGrille; dy++) {
+        // Calculer le rayon de recherche en cellules
+        int rayonCellules = (int) Math.ceil(eps / tailleGrille);
+
+        // Parcourir uniquement les cellules pertinentes
+        for (int dx = -rayonCellules; dx <= rayonCellules; dx++) {
+            for (int dy = -rayonCellules; dy <= rayonCellules; dy++) {
+                // Vérification rapide : la cellule est-elle dans le rayon ?
+                double distCellule = Math.sqrt(dx * dx + dy * dy) * tailleGrille;
+                if (distCellule > eps + tailleGrille * Math.sqrt(2)) {
+                    continue; // Cette cellule est trop loin
+                }
+
                 String cle = (gx + dx) + "," + (gy + dy);
                 List<Integer> pointsDansCellule = grilleSpatiale.get(cle);
 
                 if (pointsDansCellule != null) {
                     for (int i : pointsDansCellule) {
-                        if (metrique.calculerDistance(donnees[pointIndex], donnees[i]) <= eps) {
+                        double distance = metrique.calculerDistance(donnees[pointIndex], donnees[i]);
+                        if (distance <= eps) {
                             voisins.add(i);
                         }
                     }
@@ -146,23 +173,6 @@ public class DBSCANOptimiseGenerique<T> extends AlgorithmeClusteringAbstrait<T> 
 
         return voisins;
     }
-
-    /**
-     * Recherche de voisins standard (sans optimisation).
-     */
-    private List<Integer> trouverVoisins(T[] donnees, int pointIndex, MetriqueDistance<T> metrique) {
-        List<Integer> voisins = new ArrayList<>();
-        T point = donnees[pointIndex];
-
-        for (int i = 0; i < donnees.length; i++) {
-            if (metrique.calculerDistance(point, donnees[i]) <= eps) {
-                voisins.add(i);
-            }
-        }
-
-        return voisins;
-    }
-
 
     /**
      * Étend le cluster en ajoutant tous les points atteignables.
@@ -184,13 +194,7 @@ public class DBSCANOptimiseGenerique<T> extends AlgorithmeClusteringAbstrait<T> 
                 clusters[voisinIndex] = clusterId;
 
                 // Trouver les voisins du voisin
-                List<Integer> voisinsDuVoisin;
-
-                if (utilisationIndexSpatial && grilleSpatiale != null) {
-                    voisinsDuVoisin = trouverVoisinsOptimise(donnees, voisinIndex, metrique);
-                } else {
-                    voisinsDuVoisin = trouverVoisins(donnees, voisinIndex, metrique);
-                }
+                List<Integer> voisinsDuVoisin = trouverVoisinsOptimise(donnees, voisinIndex, metrique);
 
                 if (voisinsDuVoisin.size() >= minPts) {
                     for (int nouveauVoisin : voisinsDuVoisin) {
@@ -205,4 +209,9 @@ public class DBSCANOptimiseGenerique<T> extends AlgorithmeClusteringAbstrait<T> 
             }
         }
     }
+
+    // Getters pour les paramètres
+    public double getEps() { return eps; }
+    public int getMinPts() { return minPts; }
+
 }

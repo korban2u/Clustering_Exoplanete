@@ -63,10 +63,6 @@ public class Analyseur {
         String[] etiquettes = visuBiomes.etiquerBiomes(biomes);
         detecterEcosystemes(image, biomes, etiquettes, dossierResultats + "/ecosystemes");
 
-        // 6. Validation des résultats
-        System.out.println("\n5. Validation des résultats...");
-        validerResultats(image, biomes, dossierResultats + "/validation");
-
         System.out.println("\n=== ANALYSE TERMINÉE ===");
         System.out.println("Résultats sauvegardés dans: " + dossierResultats);
     }
@@ -101,7 +97,7 @@ public class Analyseur {
         ResultatClustering biomes = manager.clusteriserImage(
                 image,
                 Algorithmes.kmeans(nombreBiomes),
-                TypeClustering.BIOMES_EUCLIDIENNE
+                TypeClustering.BIOMES_CIE94
         );
 
         System.out.println("  Biomes détectés: " + biomes.nombreClusters);
@@ -139,8 +135,8 @@ public class Analyseur {
 
             // Utiliser DBSCAN pour détecter les écosystèmes
             // Adapter eps selon la taille du biome
-            double eps = Math.sqrt(pixelsBiome.length) * 2; // Heuristique
-            int minPts = 20;
+            double eps = 60;
+            int minPts = 50;
 
             ResultatClustering ecosystemes = manager.clusteriserSousEnsemble(
                     pixelsBiome,
@@ -164,64 +160,6 @@ public class Analyseur {
         }
     }
 
-    /**
-     * Effectue la validation des résultats avec différents paramètres.
-     */
-    private void validerResultats(BufferedImage image,
-                                  ResultatClustering biomes,
-                                  String dossierSortie) throws IOException {
-        // Créer le dossier de validation
-        Files.createDirectories(Paths.get(dossierSortie));
-
-        StringBuilder rapport = new StringBuilder();
-        rapport.append("=== RAPPORT DE VALIDATION ===\n\n");
-
-        // 1. Tester différentes valeurs de K pour K-Means
-        rapport.append("1. Test de différentes valeurs de K (K-Means avec CIELAB):\n");
-        rapport.append("K\tDavies-Bouldin\n");
-
-        MetriqueCouleur metrique = new MetriqueCouleur(new NormeCielab());
-
-        for (int k = 3; k <= 10; k++) {
-            ResultatClustering resultat = manager.clusteriserImage(
-                    image,
-                    Algorithmes.kmeans(k),
-                    TypeClustering.BIOMES_CIELAB
-            );
-
-            double db = daviesBouldin.calculer(resultat, metrique);
-            rapport.append(k).append("\t").append(String.format("%.3f", db)).append("\n");
-        }
-
-        // 2. Tester différents paramètres pour DBSCAN
-        rapport.append("\n2. Test de paramètres DBSCAN (avec distance euclidienne RGB):\n");
-        rapport.append("eps\tminPts\tClusters\tSilhouette\n");
-
-        double[] epsValues = {15.0, 20.0, 25.0, 30.0};
-        int[] minPtsValues = {30, 50, 70};
-
-        for (double eps : epsValues) {
-            for (int minPts : minPtsValues) {
-                ResultatClustering resultat = manager.clusteriserImage(
-                        image,
-                        Algorithmes.dbscan(eps, minPts),
-                        TypeClustering.BIOMES_EUCLIDIENNE
-                );
-
-                if (resultat.nombreClusters > 0) {
-                    double silhouette = silhouetteScore.calculer(resultat, metrique);
-                    rapport.append(String.format("%.1f\t%d\t%d\t%.3f\n",
-                            eps, minPts, resultat.nombreClusters, silhouette));
-                }
-            }
-        }
-
-        // Sauvegarder le rapport
-        Files.write(Paths.get(dossierSortie + "/rapport_validation.txt"),
-                rapport.toString().getBytes());
-
-        System.out.println("  Rapport de validation sauvegardé");
-    }
 
     /**
      * Méthode principale pour tester l'analyse.

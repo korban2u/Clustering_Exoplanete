@@ -200,6 +200,7 @@ public class VisualisationEcosystemes {
             rapport.append(String.format("  - Nombre de pixels: %d (%.2f%% du biome)\n",
                     nbPixels, pourcentage));
 
+
             // Calculer le centre approximatif
             if (nbPixels > 0) {
                 int sumX = 0, sumY = 0;

@@ -131,7 +131,6 @@ public class ClusteringManager {
             return new DBSCANOptimiseGenerique<>(eps, minPts);
         }
 
-        // HAC peut être ajouté de la même manière
     }
 
     /**
@@ -155,6 +154,7 @@ public class ClusteringManager {
         public final String metrique;
         public final long dureeMs;
         public final PixelData[] pixels;
+
 
         public ResultatClustering(int[] affectations, int nombreClusters,
                                   String algorithme, String metrique,
