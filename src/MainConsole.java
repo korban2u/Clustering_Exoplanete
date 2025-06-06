@@ -511,6 +511,7 @@ public class MainConsole {
         exporterResultats();
 
         System.out.println("\n=== ANALYSE COMPLÈTE TERMINÉE ===");
+        System.out.println("\n=== Il faudra quitter le programme pour que le dossier s'affiche (0 dans le menu principal) ===");
     }
 
     // === MÉTHODES UTILITAIRES ===
