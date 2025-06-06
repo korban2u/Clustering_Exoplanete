@@ -15,11 +15,4 @@ public interface CalculateurCentroide<T> {
      */
     T calculerCentroide(T[] objets);
 
-    /**
-     * Vérifie si le calculateur peut créer de nouveaux objets.
-     * Si false, on utilisera un objet existant comme représentant.
-     *
-     * @return true si on peut créer de nouveaux centroïdes
-     */
-    boolean peutCreerNouveauxObjets();
 }

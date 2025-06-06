@@ -90,10 +90,6 @@ public class CalculateurCentroidePixel implements CalculateurCentroide<PixelData
         return new PixelData(x, y, couleur, -1);
     }
 
-    @Override
-    public boolean peutCreerNouveauxObjets() {
-        return true; // On peut créer de nouveaux PixelData
-    }
 
     /**
      * S'assure qu'une valeur est dans l'intervalle [0, 255] pour les couleurs.
