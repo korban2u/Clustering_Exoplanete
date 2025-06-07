@@ -156,7 +156,7 @@ public class MainInterface extends JFrame {
     private void createBiomesPanel(JPanel panel) {
         // Configuration
         JSpinner spinnerBiomes = createSpinner(6, 2, 15, 1);
-        JComboBox<String> algoCombo = createCombo("K-Means", "DBSCAN");
+        JComboBox<String> algoCombo = createCombo("K-Means", "DBSCAN", "DBSCAN Optimisé");  // AJOUT
         JComboBox<String> metricCombo = createCombo("CIELAB", "CIE94", "Euclidienne", "Redmean");
 
         // Paramètres DBSCAN pour biomes
@@ -196,6 +196,7 @@ public class MainInterface extends JFrame {
                 (Integer)spinnerMinPtsBiomes.getValue(),
                 metricCombo.getSelectedIndex()
         ));
+
         btnDetect.setEnabled(false);
         components.put("btnDetectBiomes", btnDetect);
         config.add(btnDetect);
@@ -434,8 +435,10 @@ public class MainInterface extends JFrame {
             AlgorithmeClustering algorithm;
             if (algoIndex == 0) { // K-Means
                 algorithm = Algorithmes.kmeans(nbBiomes);
-            } else { // DBSCAN
+            } else if (algoIndex == 1) { // DBSCAN standard
                 algorithm = Algorithmes.dbscan(eps, minPts);
+            } else { // DBSCAN Optimisé
+                algorithm = Algorithmes.dbscanOpti(eps, minPts);
             }
 
             // Choisir la métrique

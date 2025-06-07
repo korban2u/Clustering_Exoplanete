@@ -205,8 +205,9 @@ public class MainConsole {
         // Choix de l'algorithme
         System.out.println("Algorithme:");
         System.out.println("1. K-Means (recommandé pour les biomes)");
-        System.out.println("2. DBSCAN");
-        int algoChoice = lireEntier("Votre choix: ", 1, 2);
+        System.out.println("2. DBSCAN Standard");
+        System.out.println("3. DBSCAN Optimisé (plus rapide que le standard mais toujours lent)");
+        int algoChoice = lireEntier("Votre choix: ", 1, 3);
 
         // Choix de la métrique
         System.out.println("\nMétrique de couleur:");
@@ -224,7 +225,12 @@ public class MainConsole {
         } else {
             double eps = lireDouble("Epsilon (5-100): ", 5.0, 100.0);
             int minPts = lireEntier("MinPts (10-200): ", 10, 200);
-            algorithme = Algorithmes.dbscan(eps, minPts);
+
+            if (algoChoice == 2) {
+                algorithme = Algorithmes.dbscan(eps, minPts);
+            } else {
+                algorithme = Algorithmes.dbscanOpti(eps, minPts);  // NOUVEAU
+            }
         }
 
         // Choisir le type de clustering selon la métrique
@@ -237,6 +243,12 @@ public class MainConsole {
         }
 
         System.out.println("\nDétection en cours...");
+
+        // Afficher un avertissement si DBSCAN standard est choisi
+        if (algoChoice == 2) {
+            System.out.println("(Attention: DBSCAN standard peut être lent sur de grandes images)");
+        }
+
         long debut = System.currentTimeMillis();
 
         resultatBiomes = manager.clusteriserImage(imageFiltree, algorithme, type);
@@ -248,6 +260,11 @@ public class MainConsole {
         System.out.println("\n=== RÉSULTATS ===");
         System.out.println("Biomes détectés: " + resultatBiomes.nombreClusters);
         System.out.println("Temps d'exécution: " + duree + " ms");
+
+        // Afficher le gain de temps si DBSCAN optimisé
+        if (algoChoice == 3) {
+            System.out.println("(DBSCAN optimisé a probablement économisé plusieurs minutes!)");
+        }
 
         // Calculer les indices de validation
         NormeCouleurs norme = metricChoice == 1 ? new NormeCielab() :
