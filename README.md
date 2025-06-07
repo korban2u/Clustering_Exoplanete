@@ -33,7 +33,7 @@ Le programme une une IA qui :
 - **Algorithmes disponibles** :
   - K-Means (recommandé pour les biomes)
   - DBSCAN Standard (lent... très lent...)
-  - DBSCAN Optimisé (moins lent)
+  - DBSCAN Optimisé (avec grille spatiale, - lent)
   - Note : Dans tout les cas, DBSCAN est pas optimisé pour la recherche de biomes 
 - **Métriques de couleur** :
   - CIELAB
@@ -46,8 +46,7 @@ Le programme une une IA qui :
 - **Algorithmes** :
   - DBSCAN Optimisé (avec grille spatiale) (recommandé pour les écosystèmes)
   - K-Means (pas opti)
-  - DBSCAN Standard (lent... très lent...)
-  - DBSCAN Optimisé (moins lent)
+  - DBSCAN Standard (lent... très lent... pour les grandes images)
   
 
 ### 4. **Validation**
