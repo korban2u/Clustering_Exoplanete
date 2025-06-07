@@ -32,7 +32,9 @@ Le programme une une IA qui :
 ### 2. **Détection de biomes**
 - **Algorithmes disponibles** :
   - K-Means (recommandé pour les biomes)
-  - DBSCAN
+  - DBSCAN Standard (lent... très lent...)
+  - DBSCAN Optimisé (moins lent)
+  - Note : Dans tout les cas, DBSCAN est pas optimisé pour la recherche de biomes 
 - **Métriques de couleur** :
   - CIELAB
   - CIE94 (recommandé)
@@ -45,6 +47,8 @@ Le programme une une IA qui :
   - DBSCAN Optimisé (avec grille spatiale) (recommandé pour les écosystèmes)
   - K-Means (pas opti)
   - DBSCAN Standard (lent... très lent...)
+  - DBSCAN Optimisé (moins lent)
+  
 
 ### 4. **Validation**
 - **Indice de Davies-Bouldin** (K-Means)
