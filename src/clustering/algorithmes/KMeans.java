@@ -77,6 +77,8 @@ public class KMeans<T> extends AlgorithmeClusteringAbstrait<T> {
             centroides = mettreAJourCentroides(donnees, affectations);
         }
 
+        this.nombreClusters = nbClusters;
+
         return affectations;
     }
 
