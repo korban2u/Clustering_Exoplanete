@@ -19,7 +19,7 @@ public class DaviesBouldinIndex {
      * @param metrique La métrique de distance utilisée
      * @return La valeur de l'indice DB (plus faible = meilleur)
      */
-    public double calculer(ResultatClustering resultat, MetriqueDistance<PixelData> metrique) {
+    public double calculer(ResultatClustering resultat, MetriqueDistance metrique) {
         int K = resultat.nombreClusters;
         if (K <= 1) return 0.0; // Pas de sens pour 0 ou 1 cluster
 
@@ -108,7 +108,7 @@ public class DaviesBouldinIndex {
     private double calculerDispersionIntraCluster(ResultatClustering resultat,
                                                   int cluster,
                                                   PixelData centroide,
-                                                  MetriqueDistance<PixelData> metrique) {
+                                                  MetriqueDistance metrique) {
         PixelData[] pixelsCluster = resultat.getPixelsCluster(cluster);
 
         if (pixelsCluster.length == 0) return 0.0;
@@ -129,7 +129,7 @@ public class DaviesBouldinIndex {
      */
     public double[] testerDifferentsK(BufferedImage image,
                                       int kMin, int kMax,
-                                      MetriqueDistance<PixelData> metrique,
+                                      MetriqueDistance metrique,
                                       clustering.ClusteringManager manager) {
         double[] scores = new double[kMax - kMin + 1];
 

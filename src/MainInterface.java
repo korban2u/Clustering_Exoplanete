@@ -431,7 +431,7 @@ public class MainInterface extends JFrame {
     private void detecterBiomes(int algoIndex, int nbBiomes, double eps, int minPts, int metricIndex) {
         executeAsync(() -> {
             // Créer l'algorithme selon le choix
-            AlgorithmeClustering<PixelData> algorithm;
+            AlgorithmeClustering algorithm;
             if (algoIndex == 0) { // K-Means
                 algorithm = Algorithmes.kmeans(nbBiomes);
             } else { // DBSCAN
@@ -512,7 +512,7 @@ public class MainInterface extends JFrame {
                     PixelData[] pixels = resultatBiomes.getPixelsCluster(i);
                     if (pixels.length < 50) continue;
 
-                    AlgorithmeClustering<PixelData> algorithm = createEcoAlgorithm(algoIndex, k, eps, minPts);
+                    AlgorithmeClustering algorithm = createEcoAlgorithm(algoIndex, k, eps, minPts);
                     ResultatClustering eco = manager.clusteriserSousEnsemble(
                             pixels, algorithm, TypeClustering.ECOSYSTEMES_POSITION);
                     resultatsEcosystemes.set(i, eco);
@@ -525,7 +525,7 @@ public class MainInterface extends JFrame {
                     throw new RuntimeException("Biome trop petit pour l'analyse");
                 }
 
-                AlgorithmeClustering<PixelData> algorithm = createEcoAlgorithm(algoIndex, k, eps, minPts);
+                AlgorithmeClustering algorithm = createEcoAlgorithm(algoIndex, k, eps, minPts);
                 ResultatClustering eco = manager.clusteriserSousEnsemble(
                         pixels, algorithm, TypeClustering.ECOSYSTEMES_POSITION);
 
@@ -630,7 +630,7 @@ public class MainInterface extends JFrame {
         stats.repaint();
     }
 
-    private AlgorithmeClustering<PixelData> createEcoAlgorithm(int index, int k, double eps, int minPts) {
+    private AlgorithmeClustering createEcoAlgorithm(int index, int k, double eps, int minPts) {
         switch (index) {
             case 0: return Algorithmes.dbscanOpti(eps, minPts);
             case 1: return Algorithmes.kmeans(k);

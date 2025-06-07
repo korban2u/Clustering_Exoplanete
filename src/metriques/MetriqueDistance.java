@@ -1,20 +1,19 @@
 package metriques;
 
+import outils.PixelData;
+
 /**
- * Interface générique pour calculer la distance entre deux objets de type T.
- * Peut être utilisée pour n'importe quel type de données (couleurs, positions, etc.)
- *
- * @param <T> Le type de données à comparer
+ * Interface pour calculer la distance entre deux PixelData.
  */
-public interface MetriqueDistance<T> {
+public interface MetriqueDistance {
     /**
-     * Calcule la distance entre deux objets.
+     * Calcule la distance entre deux pixels.
      *
-     * @param obj1 Premier objet
-     * @param obj2 Deuxième objet
-     * @return La distance entre les deux objets (toujours positive)
+     * @param pixel1 Premier pixel
+     * @param pixel2 Deuxième pixel
+     * @return La distance entre les deux pixels (toujours positive)
      */
-    double calculerDistance(T obj1, T obj2);
+    double calculerDistance(PixelData pixel1, PixelData pixel2);
 
     /**
      * Retourne le nom de la métrique pour l'affichage.

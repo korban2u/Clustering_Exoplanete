@@ -217,7 +217,7 @@ public class MainConsole {
         int metricChoice = lireEntier("Votre choix: ", 1, 4);
 
         // Paramètres selon l'algorithme
-        AlgorithmeClustering<PixelData> algorithme;
+        AlgorithmeClustering algorithme;
         if (algoChoice == 1) {
             int k = lireEntier("Nombre de biomes (2-15): ", 2, 15);
             algorithme = Algorithmes.kmeans(k);
@@ -298,7 +298,7 @@ public class MainConsole {
         int algoChoice = lireEntier("Votre choix: ", 1, 3);
 
         // Paramètres
-        AlgorithmeClustering<PixelData> algorithme;
+        AlgorithmeClustering algorithme;
         if (algoChoice == 2) {
             int k = lireEntier("Nombre d'écosystèmes par biome (2-10): ", 2, 10);
             algorithme = Algorithmes.kmeans(k);
@@ -351,7 +351,7 @@ public class MainConsole {
     /**
      * Analyser un biome spécifique
      */
-    private static int analyserBiome(int biomeId, AlgorithmeClustering<PixelData> algorithme) {
+    private static int analyserBiome(int biomeId, AlgorithmeClustering algorithme) {
         PixelData[] pixels = resultatBiomes.getPixelsCluster(biomeId);
         System.out.println("\nAnalyse du biome " + biomeId + " (" + etiquettesBiomes[biomeId] + ")...");
         System.out.println("Nombre de pixels: " + pixels.length);

@@ -5,10 +5,10 @@ import outils.PixelData;
 import normeCouleurs.NormeCouleurs;
 
 /**
- * Adaptateur qui permet d'utiliser les normes de couleurs existantes (celle faites pendant le TP)
- * comme métriques génériques sur des PixelData.
+ * Adaptateur qui permet d'utiliser les normes de couleurs existantes
+ * comme métriques pour les PixelData.
  */
-public class MetriqueCouleur implements MetriqueDistance<PixelData> {
+public class MetriqueCouleur implements MetriqueDistance {
     private final NormeCouleurs normeCouleur;
 
     public MetriqueCouleur(NormeCouleurs normeCouleur) {

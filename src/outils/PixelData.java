@@ -4,7 +4,7 @@ import java.awt.Color;
 
 /**
  * Représente un pixel avec toutes ses informations.
- * Cette classe unifie les données de couleur et de position.
+ * Cette classe nous permet de simplifier les calculs et de rendre réutilisable les algos.
  */
 public class PixelData {
     private final int x;

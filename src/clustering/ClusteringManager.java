@@ -12,22 +12,19 @@ import java.util.*;
 
 /**
  * Gestionnaire principal pour effectuer le clustering sur des images.
- * Fournit une interface simple pour utiliser n'importe quel algorithme
- * avec n'importe quelle métrique.
+ * Version spécialisée pour PixelData uniquement.
  */
 public class ClusteringManager {
-
 
     /**
      * Effectue un clustering sur une image selon le type de données voulu.
      */
-    public ResultatClustering clusteriserImage(BufferedImage image, AlgorithmeClustering<PixelData> algorithme, TypeClustering type) {
+    public ResultatClustering clusteriserImage(BufferedImage image, AlgorithmeClustering algorithme, TypeClustering type) {
         // Extraire les données de l'image
         PixelData[] pixels = extrairePixels(image);
 
         // Choisir la métrique appropriée
-        MetriqueDistance<PixelData> metrique = obtenirMetrique(type);
-
+        MetriqueDistance metrique = obtenirMetrique(type);
 
         // Exécuter le clustering
         long debut = System.currentTimeMillis();
@@ -35,15 +32,21 @@ public class ClusteringManager {
         long duree = System.currentTimeMillis() - debut;
 
         // Construire et retourner le résultat
-        return new ResultatClustering(affectations, algorithme.getNombreClusters(), algorithme.getNom(), metrique.getNom(), duree, pixels
+        return new ResultatClustering(
+                affectations,
+                algorithme.getNombreClusters(),
+                algorithme.getNom(),
+                metrique.getNom(),
+                duree,
+                pixels
         );
     }
 
     /**
      * Effectue un clustering sur un sous-ensemble de pixels (utile pour les écosystèmes).
      */
-    public ResultatClustering clusteriserSousEnsemble(PixelData[] pixels, AlgorithmeClustering<PixelData> algorithme, TypeClustering type) {
-        MetriqueDistance<PixelData> metrique = obtenirMetrique(type);
+    public ResultatClustering clusteriserSousEnsemble(PixelData[] pixels, AlgorithmeClustering algorithme, TypeClustering type) {
+        MetriqueDistance metrique = obtenirMetrique(type);
 
         long debut = System.currentTimeMillis();
         int[] affectations = algorithme.executer(pixels, metrique);
@@ -82,7 +85,7 @@ public class ClusteringManager {
     /**
      * Retourne la métrique appropriée selon le type de clustering.
      */
-    private MetriqueDistance<PixelData> obtenirMetrique(TypeClustering type) {
+    private MetriqueDistance obtenirMetrique(TypeClustering type) {
         switch (type) {
             case BIOMES_EUCLIDIENNE:
                 return new MetriqueCouleur(new NormeEuclidienne());
@@ -104,23 +107,21 @@ public class ClusteringManager {
         }
     }
 
-
     /**
      * Méthodes factory pour créer facilement des algorithmes.
      */
     public static class Algorithmes {
-        public static AlgorithmeClustering<PixelData> kmeans(int k) {
-            return new KMeans<>(k, 100);
+        public static AlgorithmeClustering kmeans(int k) {
+            return new KMeans(k, 100);
         }
 
-        public static AlgorithmeClustering<PixelData> dbscan(double eps, int minPts) {
-            return new DBSCAN<>(eps, minPts);
+        public static AlgorithmeClustering dbscan(double eps, int minPts) {
+            return new DBSCAN(eps, minPts);
         }
 
-        public static AlgorithmeClustering<PixelData> dbscanOpti(double eps, int minPts) {
-            return new DBSCANOptimise<>(eps, minPts);
+        public static AlgorithmeClustering dbscanOpti(double eps, int minPts) {
+            return new DBSCANOptimise(eps, minPts);
         }
-
     }
 
     /**
@@ -145,8 +146,8 @@ public class ClusteringManager {
         public final long dureeMs;
         public final PixelData[] pixels;
 
-
-        public ResultatClustering(int[] affectations, int nombreClusters, String algorithme, String metrique, long dureeMs, PixelData[] pixels) {
+        public ResultatClustering(int[] affectations, int nombreClusters, String algorithme,
+                                  String metrique, long dureeMs, PixelData[] pixels) {
             this.affectations = affectations;
             this.nombreClusters = nombreClusters;
             this.algorithme = algorithme;

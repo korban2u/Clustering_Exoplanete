@@ -1,71 +1,44 @@
 package clustering.algorithmes;
 
-import clustering.centroides.CalculateurCentroide;
-import clustering.centroides.CalculateurCentroidePixel;
-import clustering.centroides.CalculateurCentroidePixel.TypeCentroide;
 import outils.PixelData;
 import metriques.MetriqueDistance;
-
+import java.awt.Color;
 import java.util.Random;
 import java.util.Arrays;
 
 /**
- * Implémentation de K-Means.
- * Fonctionne avec n'importe quel type de données et métrique.
- *
- * @param <T> Le type de données à clustériser
+ * Implémentation de K-Means pour PixelData.
  */
-public class KMeans<T> extends AlgorithmeClusteringAbstrait<T> {
+public class KMeans extends AlgorithmeClusteringAbstrait {
 
-    private final int nbClusters; // Nombre de clusters souhaité
+    private final int nbClusters;
     private final int maxIterations;
     private final Random random;
-    private CalculateurCentroide<T> calculateurCentroide;
-
 
     public KMeans(int nbClusters, int maxIterations) {
         super("K-Means (K=" + nbClusters + ")");
         this.nbClusters = nbClusters;
         this.maxIterations = maxIterations;
         this.random = new Random();
-
-    }
-
-    /**
-     * Définit le calculateur de centroïde à utiliser.
-     */
-    public void setCalculateurCentroide(CalculateurCentroide<T> calculateur) {
-        this.calculateurCentroide = calculateur;
     }
 
     @Override
-    public int[] executer(T[] donnees, MetriqueDistance<T> metrique) {
+    public int[] executer(PixelData[] donnees, MetriqueDistance metrique) {
         int n = donnees.length;
         if (n == 0) return new int[0];
 
-        // Détection automatique du calculateur de centroïde pour PixelData
-        if (calculateurCentroide == null && donnees[0] instanceof PixelData) {
-            // Déterminer le type selon la métrique
-            String nomMetrique = metrique.getNom().toLowerCase();
-            if (nomMetrique.contains("position") && !nomMetrique.contains("rgb")) {
-                calculateurCentroide = (CalculateurCentroide<T>) new CalculateurCentroidePixel(TypeCentroide.POSITION);
-            } else {
-                calculateurCentroide = (CalculateurCentroide<T>) new CalculateurCentroidePixel(TypeCentroide.COULEUR);
-            }
-        }
-
         // Initialisation
         int[] affectations = new int[n];
-        T[] centroides = initialiserCentroides(donnees);
+        PixelData[] centroides = initialiserCentroides(donnees);
 
         // Boucle principale
         for (int iteration = 0; iteration < maxIterations; iteration++) {
             int[] nouvellesAffectations = new int[n];
 
             // Étape 1 : Affecter chaque point au centroïde le plus proche
-
-            affecterPointsSequentiel(donnees, centroides, nouvellesAffectations, metrique);
-
+            for (int i = 0; i < donnees.length; i++) {
+                nouvellesAffectations[i] = trouverCentroideLePlusProche(donnees[i], centroides, metrique);
+            }
 
             // Vérifier la convergence
             if (Arrays.equals(affectations, nouvellesAffectations)) {
@@ -78,17 +51,14 @@ public class KMeans<T> extends AlgorithmeClusteringAbstrait<T> {
         }
 
         this.nombreClusters = nbClusters;
-
         return affectations;
     }
 
     /**
      * Initialise les centroïdes en choisissant k points aléatoires.
      */
-    @SuppressWarnings("unchecked") // on met ça pour eviter avertisements unchecked casts quand on compile (vu que on utilise des types générique)
-    private T[] initialiserCentroides(T[] donnees) {
-        Class<?> componentType = donnees.getClass().getComponentType();
-        T[] centroides = (T[]) java.lang.reflect.Array.newInstance(componentType, nbClusters);
+    private PixelData[] initialiserCentroides(PixelData[] donnees) {
+        PixelData[] centroides = new PixelData[nbClusters];
         boolean[] choisis = new boolean[donnees.length];
 
         for (int i = 0; i < nbClusters; i++) {
@@ -105,20 +75,10 @@ public class KMeans<T> extends AlgorithmeClusteringAbstrait<T> {
     }
 
     /**
-     * Affecte chaque point au centroïde le plus proche
-     */
-    private void affecterPointsSequentiel(T[] donnees, T[] centroides,
-                                          int[] affectations, MetriqueDistance<T> metrique) {
-        for (int i = 0; i < donnees.length; i++) {
-            affectations[i] = trouverCentroideLePlusProche(donnees[i], centroides, metrique);
-        }
-    }
-
-
-    /**
      * Trouve l'indice du centroïde le plus proche d'un point donné.
      */
-    private int trouverCentroideLePlusProche(T point, T[] centroides, MetriqueDistance<T> metrique) {
+    private int trouverCentroideLePlusProche(PixelData point, PixelData[] centroides,
+                                             MetriqueDistance metrique) {
         int plusProche = 0;
         double distanceMin = metrique.calculerDistance(point, centroides[0]);
 
@@ -134,44 +94,56 @@ public class KMeans<T> extends AlgorithmeClusteringAbstrait<T> {
     }
 
     /**
-     * Met à jour les centroïdes en calculant le "centre" de chaque cluster.
+     * Met à jour les centroïdes en calculant le centre de chaque cluster.
      */
-    @SuppressWarnings("unchecked")
-    private T[] mettreAJourCentroides(T[] donnees, int[] affectations) {
-        // Utiliser la classe du premier élément pour créer le tableau
-        Class<?> componentType = donnees.getClass().getComponentType();
-        T[] nouveauxCentroides = (T[]) java.lang.reflect.Array.newInstance(componentType, nbClusters);
+    private PixelData[] mettreAJourCentroides(PixelData[] donnees, int[] affectations) {
+        PixelData[] nouveauxCentroides = new PixelData[nbClusters];
 
-        // Pour chaque cluster
         for (int cluster = 0; cluster < nbClusters; cluster++) {
-            // Collecter tous les points du cluster
+            double moyX = 0, moyY = 0;
+            double moyR = 0, moyG = 0, moyB = 0;
             int count = 0;
-            for (int affectation : affectations) {
-                if (affectation == cluster) count++;
-            }
 
-            if (count == 0) {
-                // Cluster vide, réinitialiser avec un point aléatoire
-                nouveauxCentroides[cluster] = donnees[random.nextInt(donnees.length)];
-                continue;
-            }
-
-            // Créer un tableau avec les points du cluster
-            // utilisation de Array.newInstance pour créer le tableau du bon type,
-            // sans ça on peut pas vu que on utilise des types génériques
-            T[] pointsCluster = (T[]) java.lang.reflect.Array.newInstance(componentType, count);
-            int index = 0;
+            // Calculer les moyennes pour ce cluster
             for (int i = 0; i < affectations.length; i++) {
                 if (affectations[i] == cluster) {
-                    pointsCluster[index++] = donnees[i];
+                    PixelData pixel = donnees[i];
+
+                    // Toujours calculer les moyennes de position ET couleur
+                    moyX += pixel.getX();
+                    moyY += pixel.getY();
+
+                    Color c = pixel.getCouleur();
+                    moyR += c.getRed();
+                    moyG += c.getGreen();
+                    moyB += c.getBlue();
+
+                    count++;
                 }
             }
 
-            // Calculer le centroïde
-            nouveauxCentroides[cluster] = calculateurCentroide.calculerCentroide(pointsCluster);
+            if (count == 0) {
+                // Cluster vide, prendre un point aléatoire
+                nouveauxCentroides[cluster] = donnees[random.nextInt(donnees.length)];
+            } else {
+                // Créer le centroïde avec les moyennes calculées
+                int x = (int) Math.round(moyX / count);
+                int y = (int) Math.round(moyY / count);
+                int r = clamp((int) Math.round(moyR / count));
+                int g = clamp((int) Math.round(moyG / count));
+                int b = clamp((int) Math.round(moyB / count));
 
+                nouveauxCentroides[cluster] = new PixelData(x, y, new Color(r, g, b), -1);
+            }
         }
 
         return nouveauxCentroides;
+    }
+
+    /**
+     * S'assure qu'une valeur est dans l'intervalle [0, 255] pour les couleurs.
+     */
+    private int clamp(int valeur) {
+        return Math.max(0, Math.min(255, valeur));
     }
 }

@@ -1,16 +1,13 @@
 package clustering.algorithmes;
 
 import metriques.MetriqueDistance;
-
+import outils.PixelData;
 import java.util.*;
 
 /**
- * Implémentation de l'algorithme DBSCAN.
- * Fonctionne avec n'importe quel type de données et métrique.
- *
- * @param <T> Le type de données à clustériser
+ * Implémentation de l'algorithme DBSCAN pour PixelData.
  */
-public class DBSCAN<T> extends AlgorithmeClusteringAbstrait<T> {
+public class DBSCAN extends AlgorithmeClusteringAbstrait {
 
     private final double eps;
     private final int minPts;
@@ -26,11 +23,10 @@ public class DBSCAN<T> extends AlgorithmeClusteringAbstrait<T> {
     }
 
     @Override
-    public int[] executer(T[] donnees, MetriqueDistance<T> metrique) {
+    public int[] executer(PixelData[] donnees, MetriqueDistance metrique) {
         int n = donnees.length;
         int[] clusters = new int[n];
         Arrays.fill(clusters, NON_VISITE);
-
 
         int clusterActuel = 0;
 
@@ -40,8 +36,7 @@ public class DBSCAN<T> extends AlgorithmeClusteringAbstrait<T> {
             }
 
             // Trouver les voisins
-            List<Integer> voisins;
-            voisins = trouverVoisins(donnees, i, metrique);
+            List<Integer> voisins = trouverVoisins(donnees, i, metrique);
 
             if (voisins.size() < minPts) {
                 clusters[i] = BRUIT;
@@ -63,13 +58,13 @@ public class DBSCAN<T> extends AlgorithmeClusteringAbstrait<T> {
         return clusters;
     }
 
-
     /**
      * Trouve tous les points dans le rayon eps du point donné.
      */
-    private List<Integer> trouverVoisins(T[] donnees, int pointIndex, MetriqueDistance<T> metrique) {
+    private List<Integer> trouverVoisins(PixelData[] donnees, int pointIndex,
+                                         MetriqueDistance metrique) {
         List<Integer> voisins = new ArrayList<>();
-        T point = donnees[pointIndex];
+        PixelData point = donnees[pointIndex];
 
         for (int i = 0; i < donnees.length; i++) {
             if (metrique.calculerDistance(point, donnees[i]) <= eps) {
@@ -83,7 +78,9 @@ public class DBSCAN<T> extends AlgorithmeClusteringAbstrait<T> {
     /**
      * Étend le cluster en ajoutant tous les points atteignables.
      */
-    private void expandCluster(T[] donnees, int[] clusters, int pointIndex, List<Integer> voisins, int clusterId, MetriqueDistance<T> metrique) {
+    private void expandCluster(PixelData[] donnees, int[] clusters, int pointIndex,
+                               List<Integer> voisins, int clusterId,
+                               MetriqueDistance metrique) {
         clusters[pointIndex] = clusterId;
 
         Queue<Integer> aTraiter = new LinkedList<>(voisins);

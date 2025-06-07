@@ -1,11 +1,9 @@
 package clustering.algorithmes;
 
 /**
- * Classe abstraite qui donne les fonctionnalités en communs des algos.
- *
- * @param <T> Le type de données à clustériser
+ * Classe abstraite qui donne les fonctionnalités communes des algorithmes.
  */
-public abstract class AlgorithmeClusteringAbstrait<T> implements AlgorithmeClustering<T> {
+public abstract class AlgorithmeClusteringAbstrait implements AlgorithmeClustering {
 
     protected int nombreClusters;
     protected final String nom;

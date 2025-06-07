@@ -6,7 +6,7 @@ import outils.PixelData;
 /**
  * Métrique de distance euclidienne pour les positions de pixels.
  */
-public class MetriquePositionEuclidienne implements MetriqueDistance<PixelData> {
+public class MetriquePositionEuclidienne implements MetriqueDistance {
 
     @Override
     public double calculerDistance(PixelData pixel1, PixelData pixel2) {
@@ -20,4 +20,3 @@ public class MetriquePositionEuclidienne implements MetriqueDistance<PixelData> 
         return "Distance Euclidienne - Position";
     }
 }
-

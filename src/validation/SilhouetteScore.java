@@ -17,7 +17,7 @@ public class SilhouetteScore {
      * Calcule le score de silhouette sur un échantillon de points.
      * Beaucoup plus rapide que la version complète.
      */
-    public double calculer(ResultatClustering resultat, MetriqueDistance<PixelData> metrique) {
+    public double calculer(ResultatClustering resultat, MetriqueDistance metrique) {
         if (resultat.nombreClusters <= 1) return 0.0;
 
         // 1. Prendre un échantillon de 500 points max
@@ -46,7 +46,7 @@ public class SilhouetteScore {
      * Calcule le score de silhouette pour un seul point.
      */
     private double calculerPourUnPoint(int index, ResultatClustering resultat,
-                                       MetriqueDistance<PixelData> metrique) {
+                                       MetriqueDistance metrique) {
         int monCluster = resultat.affectations[index];
         PixelData monPoint = resultat.pixels[index];
 

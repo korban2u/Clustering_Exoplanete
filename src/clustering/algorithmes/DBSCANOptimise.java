@@ -2,16 +2,13 @@ package clustering.algorithmes;
 
 import metriques.MetriqueDistance;
 import outils.PixelData;
-
 import java.util.*;
 
 /**
- * Version optimisée de DBSCAN avec l'utilisation de grille spatiale.
- * FONCTIONNE UNIQUEMENT AVEC des coordonnées. C'est tellement + rapide que l'autre
- *
- * @param <T> Le type de données à clustériser (doit être PixelData).
+ * Version optimisée de DBSCAN avec utilisation de grille spatiale.
+ * Optimisé spécifiquement pour les PixelData avec coordonnées.
  */
-public class DBSCANOptimise<T> extends AlgorithmeClusteringAbstrait<T> {
+public class DBSCANOptimise extends AlgorithmeClusteringAbstrait {
 
     private final double eps;
     private final int minPts;
@@ -35,14 +32,7 @@ public class DBSCANOptimise<T> extends AlgorithmeClusteringAbstrait<T> {
     }
 
     @Override
-    public int[] executer(T[] donnees, MetriqueDistance<T> metrique) {
-        // Vérifier que ce sont bien des PixelData
-        if (donnees.length > 0 && !(donnees[0] instanceof PixelData)) {
-            throw new IllegalArgumentException(
-                    "Ce DBSCAN fonctionne qu'avec des PixelData (il faut des coordonnées). Utilisez DBSCANGenerique pour d'autres types de données."
-            );
-        }
-
+    public int[] executer(PixelData[] donnees, MetriqueDistance metrique) {
         int n = donnees.length;
         int[] clusters = new int[n];
         Arrays.fill(clusters, NON_VISITE);
@@ -86,9 +76,7 @@ public class DBSCANOptimise<T> extends AlgorithmeClusteringAbstrait<T> {
     /**
      * Construit la grille spatiale pour accélérer les recherches.
      */
-    @SuppressWarnings("unchecked")
-    // Evite les message bizarre lors de la compilation (car utilisation de type générique)
-    private void construireGrilleSpatiale(T[] donnees) {
+    private void construireGrilleSpatiale(PixelData[] donnees) {
         grilleSpatiale = new HashMap<>();
 
         // Trouver les limites spatiales
@@ -97,8 +85,7 @@ public class DBSCANOptimise<T> extends AlgorithmeClusteringAbstrait<T> {
         maxX = Double.MIN_VALUE;
         maxY = Double.MIN_VALUE;
 
-        for (T donnee : donnees) {
-            PixelData pixel = (PixelData) donnee;
+        for (PixelData pixel : donnees) {
             minX = Math.min(minX, pixel.getX());
             minY = Math.min(minY, pixel.getY());
             maxX = Math.max(maxX, pixel.getX());
@@ -119,7 +106,7 @@ public class DBSCANOptimise<T> extends AlgorithmeClusteringAbstrait<T> {
 
         // Placer chaque point dans la grille
         for (int i = 0; i < donnees.length; i++) {
-            PixelData pixel = (PixelData) donnees[i];
+            PixelData pixel = donnees[i];
             String cle = getCleGrille(pixel.getX(), pixel.getY());
             grilleSpatiale.computeIfAbsent(cle, k -> new ArrayList<>()).add(i);
         }
@@ -137,11 +124,11 @@ public class DBSCANOptimise<T> extends AlgorithmeClusteringAbstrait<T> {
     /**
      * Recherche de voisins optimisée avec l'index spatial.
      */
-    @SuppressWarnings("unchecked")
-    private List<Integer> trouverVoisinsOptimise(T[] donnees, int pointIndex, MetriqueDistance<T> metrique) {
+    private List<Integer> trouverVoisinsOptimise(PixelData[] donnees, int pointIndex,
+                                                 MetriqueDistance metrique) {
         List<Integer> voisins = new ArrayList<>();
 
-        PixelData pixel = (PixelData) donnees[pointIndex];
+        PixelData pixel = donnees[pointIndex];
         int gx = (int) ((pixel.getX() - minX) / tailleGrille);
         int gy = (int) ((pixel.getY() - minY) / tailleGrille);
 
@@ -177,7 +164,9 @@ public class DBSCANOptimise<T> extends AlgorithmeClusteringAbstrait<T> {
     /**
      * Étend le cluster en ajoutant tous les points atteignables.
      */
-    private void expandCluster(T[] donnees, int[] clusters, int pointIndex, List<Integer> voisins, int clusterId, MetriqueDistance<T> metrique) {
+    private void expandCluster(PixelData[] donnees, int[] clusters, int pointIndex,
+                               List<Integer> voisins, int clusterId,
+                               MetriqueDistance metrique) {
         clusters[pointIndex] = clusterId;
 
         // Utiliser une liste au lieu d'une queue pour de meilleures performances
@@ -216,5 +205,4 @@ public class DBSCANOptimise<T> extends AlgorithmeClusteringAbstrait<T> {
     public int getMinPts() {
         return minPts;
     }
-
 }

@@ -7,7 +7,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 /**
- * Classe de test pour le Clustering (y'a le mainConsole et mainInterface maintenant, c'est 1000x mieux)
+ * Classe de test pour le Clustering avec PixelData uniquement
  */
 public class MainClustering {
 
@@ -77,7 +77,6 @@ public class MainClustering {
 
             System.out.println("  - K-Means: " + ecosystemesKMeans.nombreClusters + " écosystèmes");
         }
-
     }
 
     private static void afficherResultat(ResultatClustering resultat) {

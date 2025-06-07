@@ -1,22 +1,21 @@
 package clustering.algorithmes;
 
 import metriques.MetriqueDistance;
+import outils.PixelData;
 
 /**
- * Interface générique pour tous les algorithmes de clustering.
- *
- * @param <T> Le type de données à clustériser
+ * Interface pour tous les algorithmes de clustering sur des PixelData
  */
-public interface AlgorithmeClustering<T> {
+public interface AlgorithmeClustering {
 
     /**
      * Effectue le clustering sur les données.
      *
-     * @param donnees Tableau des données à clustériser
+     * @param donnees Tableau des PixelData à clustériser
      * @param metrique La métrique de distance à utiliser
      * @return Tableau des affectations de clusters pour chaque donnée
      */
-    int[] executer(T[] donnees, MetriqueDistance<T> metrique);
+    int[] executer(PixelData[] donnees, MetriqueDistance metrique);
 
     /**
      * Retourne le nombre de clusters trouvés ou créés.
@@ -31,5 +30,4 @@ public interface AlgorithmeClustering<T> {
      * @return Nom de l'algorithme
      */
     String getNom();
-
 }
