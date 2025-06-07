@@ -32,7 +32,7 @@ public class DBSCANOptimise extends AlgorithmeClusteringAbstrait {
     private static final int BRUIT = -1;
 
     public DBSCANOptimise(double eps, int minPts) {
-        super("DBSCAN Optimisé Universel (eps=" + eps + ", minPts=" + minPts + ")");
+        super("DBSCAN Optimisé (eps=" + eps + ", minPts=" + minPts + ")");
         this.eps = eps;
         this.minPts = minPts;
         this.tailleGrille = (int) Math.ceil(eps);
