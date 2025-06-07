@@ -10,7 +10,7 @@
 
 Suite à la mise en route du premier télescope à lentille gravitationnelle solaire (T-LGS) en juillet 2128, ce projet vise à analyser automatiquement les photographies d'exoplanètes pour détecter et classifier les différents biomes présents à leur surface.
 
-Le programme utilise des techniques de traitement d'image et d'apprentissage automatique non supervisé pour :
+Le programme une une IA qui :
 - Filtrer et prétraiter les images
 - Détecter les biomes par clustering de couleurs similaires
 - Identifier les écosystèmes au sein de chaque biome
